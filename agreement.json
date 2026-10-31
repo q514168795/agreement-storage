@@ -8,7 +8,7 @@
   "app_apk_url": "https://raw.githubusercontent.com/q514168795/agreement-storage/main/AgreementSign_Release.apk",
   "app_update_notes": "1. 全新 shadcn/ui 极简高对比设计规范\n2. 支持 PDF/PPT 课件与双锁阅读达标拦截\n3. 凭证长图自适应合成 PPT 封面微缩与核验卡\n4. 换装 EVObike 官方品牌标识与防伪印鉴",
   "service_active": true,
-  "doc_url": "https://raw.githubusercontent.com/q514168795/agreement-storage/main/doc_attachment.pptx",
+  "doc_url": "https://raw.githubusercontent.com/q514168795/agreement-storage/main/doc_attachment.pdf",
   "doc_title": "Evobike仓库标准化管理方案",
   "doc_type": "pptx"
 }

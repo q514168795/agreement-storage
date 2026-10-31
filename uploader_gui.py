@@ -793,17 +793,24 @@ class MainWindow(QMainWindow):
         # 如果用户选取了本地课件文件，复制到仓库并在 git 中同步推送
         if self.attached_doc_path and os.path.exists(self.attached_doc_path):
             ext = os.path.splitext(self.attached_doc_path)[1].lower()
-            target_name = f"doc_attachment{ext}"
+            target_name = "doc_attachment.pdf" if ext in [".ppt", ".pptx"] else f"doc_attachment{ext}"
             target_path = os.path.join(BASE_DIR, target_name)
             try:
-                shutil.copy2(self.attached_doc_path, target_path)
+                converter = "/home/hy/.local/bin/office2pdf"
+                if ext in [".ppt", ".pptx"] and os.path.exists(converter):
+                    self.badge_status.setText("正在将 PPT 转为高清 PDF...")
+                    QApplication.processEvents()
+                    subprocess.run([converter, self.attached_doc_path, "-o", target_path], check=True)
+                else:
+                    shutil.copy2(self.attached_doc_path, target_path)
+
                 extra_files.append(target_name)
                 doc_url = f"https://raw.githubusercontent.com/q514168795/agreement-storage/main/{target_name}"
                 doc_type = "pptx" if ext in [".ppt", ".pptx"] else "pdf"
                 if not doc_title:
                     doc_title = os.path.splitext(os.path.basename(self.attached_doc_path))[0]
             except Exception as e:
-                self.toast.show_message(f"复制课件文件失败: {str(e)}", is_success=False)
+                self.toast.show_message(f"处理课件文件失败: {str(e)}", is_success=False)
                 return
         elif self.current_doc_url:
             doc_url = self.current_doc_url
