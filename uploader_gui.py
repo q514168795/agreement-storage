@@ -7,6 +7,7 @@ import json
 import zipfile
 import subprocess
 import datetime
+import shutil
 import xml.etree.ElementTree as ET
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal, QTimer, QPoint
@@ -41,17 +42,21 @@ def extract_docx_content(docx_path):
 class GitPushWorker(QThread):
     finished_signal = pyqtSignal(bool, str)
 
-    def __init__(self, commit_msg):
+    def __init__(self, commit_msg, extra_files=None):
         super().__init__()
         self.commit_msg = commit_msg
+        self.extra_files = extra_files or []
 
     def run(self):
         try:
-            # 1. git add agreement.json 与可能存在的 APK 更新包
+            # 1. git add agreement.json 与可能存在的 APK 更新包及课件附件
             files_to_add = ["agreement.json"]
             apk_path = os.path.join(BASE_DIR, "AgreementSign_Release.apk")
             if os.path.exists(apk_path):
                 files_to_add.append("AgreementSign_Release.apk")
+            for extra in self.extra_files:
+                if extra not in files_to_add and os.path.exists(os.path.join(BASE_DIR, extra)):
+                    files_to_add.append(extra)
 
             res_add = subprocess.run(
                 ["git", "add"] + files_to_add,
@@ -70,7 +75,7 @@ class GitPushWorker(QThread):
                 capture_output=True,
                 text=True
             )
-            if res_commit.returncode != 0 and "nothing to commit" not in res_commit.stdout and "无文件要提交" not in res_commit.stdout:
+            if res_commit.returncode != 0 and "nothing to commit" not in res_commit.stdout and "无文件要提交" not in res_commit.stdout and "干净的工作区" not in res_commit.stdout:
                 self.finished_signal.emit(False, f"Git commit 失败: {res_commit.stderr}")
                 return
 
@@ -240,6 +245,99 @@ class DropArea(QFrame):
             self.file_dropped.emit(file_path)
 
 
+class DocDropArea(QFrame):
+    """
+    课件与附件 (PPT / PDF) 拖拽与配置区 (shadcn 虚线框风格)
+    """
+    file_dropped = pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setAcceptDrops(True)
+        self.setObjectName("docDropArea")
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.title_label = QLabel("将 课件 (PPT / PDF) 拖拽至此处", self)
+        self.title_label.setFont(QFont("Noto Sans", 10, QFont.Weight.DemiBold))
+        self.title_label.setStyleSheet("color: #09090B;")
+        layout.addWidget(self.title_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        self.sub_label = QLabel("选填：配置后手机端将开启双锁模式与封面存证", self)
+        self.sub_label.setFont(QFont("Noto Sans", 8))
+        self.sub_label.setStyleSheet("color: #71717A; margin-top: 2px;")
+        layout.addWidget(self.sub_label, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        self.btn_select = QPushButton("选择课件文件", self)
+        self.btn_select.setFont(QFont("Noto Sans", 9, QFont.Weight.Medium))
+        self.btn_select.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_select.setStyleSheet("""
+            QPushButton {
+                background-color: #FFFFFF;
+                color: #09090B;
+                border: 1px solid #E4E4E7;
+                border-radius: 6px;
+                padding: 5px 12px;
+                margin-top: 8px;
+            }
+            QPushButton:hover {
+                background-color: #F4F4F5;
+            }
+        """)
+        self.btn_select.clicked.connect(self.select_file)
+        layout.addWidget(self.btn_select, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        self.apply_style(False)
+
+    def apply_style(self, is_hover=False):
+        border_color = "#18181B" if is_hover else "#D4D4D8"
+        bg_color = "#F4F4F5" if is_hover else "#FFFFFF"
+        self.setStyleSheet(f"""
+            QFrame#docDropArea {{
+                background-color: {bg_color};
+                border: 1.5px dashed {border_color};
+                border-radius: 8px;
+            }}
+        """)
+
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        if event.mimeData().hasUrls():
+            urls = event.mimeData().urls()
+            if urls:
+                path = urls[0].toLocalFile().lower()
+                if path.endswith(".pdf") or path.endswith(".pptx") or path.endswith(".ppt"):
+                    event.acceptProposedAction()
+                    self.apply_style(True)
+                    return
+        event.ignore()
+
+    def dragLeaveEvent(self, event):
+        self.apply_style(False)
+
+    def dropEvent(self, event: QDropEvent):
+        self.apply_style(False)
+        urls = event.mimeData().urls()
+        if urls:
+            file_path = urls[0].toLocalFile()
+            path_lower = file_path.lower()
+            if path_lower.endswith(".pdf") or path_lower.endswith(".pptx") or path_lower.endswith(".ppt"):
+                self.file_dropped.emit(file_path)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.select_file()
+
+    def select_file(self):
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "选择培训课件 / 附件文档", "", "课件文档 (*.pdf *.pptx *.ppt);;PDF 文档 (*.pdf);;PowerPoint (*.pptx *.ppt)"
+        )
+        if file_path:
+            self.file_dropped.emit(file_path)
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -247,6 +345,9 @@ class MainWindow(QMainWindow):
         self.resize(860, 740)
         self.setMinimumSize(780, 620)
         self.service_active = True
+        self.attached_doc_path = ""
+        self.current_doc_url = ""
+        self.current_doc_title = ""
 
         # 全局样式采用 shadcn/ui 风格
         self.setStyleSheet("""
@@ -341,10 +442,68 @@ class MainWindow(QMainWindow):
         divider.setStyleSheet("color: #E4E4E7;")
         main_layout.addWidget(divider)
 
-        # 2. Word 拖拽上传区
+        # 2. 导入区：左侧 Word 条款导入，右侧 PPT/PDF 课件导入
+        import_row_layout = QHBoxLayout()
+        import_row_layout.setSpacing(12)
+
         self.drop_area = DropArea(self)
         self.drop_area.file_dropped.connect(self.on_file_loaded)
-        main_layout.addWidget(self.drop_area)
+        import_row_layout.addWidget(self.drop_area, stretch=1)
+
+        self.doc_drop_area = DocDropArea(self)
+        self.doc_drop_area.file_dropped.connect(self.on_doc_file_selected)
+        import_row_layout.addWidget(self.doc_drop_area, stretch=1)
+
+        main_layout.addLayout(import_row_layout)
+
+        # 课件状态微调栏 (shadcn 极简微卡片)
+        self.doc_status_frame = QFrame(self)
+        self.doc_status_frame.setStyleSheet("""
+            QFrame {
+                background-color: #FFFFFF;
+                border: 1px solid #E4E4E7;
+                border-radius: 6px;
+            }
+        """)
+        doc_status_layout = QHBoxLayout(self.doc_status_frame)
+        doc_status_layout.setContentsMargins(14, 8, 14, 8)
+        doc_status_layout.setSpacing(10)
+
+        self.lbl_doc_badge = QLabel("课件状态:", self.doc_status_frame)
+        self.lbl_doc_badge.setFont(QFont("Noto Sans", 9, QFont.Weight.DemiBold))
+        self.lbl_doc_badge.setStyleSheet("color: #18181B; border: none;")
+        doc_status_layout.addWidget(self.lbl_doc_badge)
+
+        self.lbl_doc_info = QLabel("未添加课件附件（手机端将自动以纯文字单锁模式运行）", self.doc_status_frame)
+        self.lbl_doc_info.setFont(QFont("Noto Sans", 9))
+        self.lbl_doc_info.setStyleSheet("color: #71717A; border: none;")
+        doc_status_layout.addWidget(self.lbl_doc_info, stretch=1)
+
+        self.edit_doc_title = QLineEdit(self.doc_status_frame)
+        self.edit_doc_title.setPlaceholderText("课件展示名称 (如: EVOBIKE 员工规章培训)")
+        self.edit_doc_title.setVisible(False)
+        doc_status_layout.addWidget(self.edit_doc_title, stretch=2)
+
+        self.btn_clear_doc = QPushButton("× 移除课件", self.doc_status_frame)
+        self.btn_clear_doc.setFont(QFont("Noto Sans", 9, QFont.Weight.Medium))
+        self.btn_clear_doc.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_clear_doc.setStyleSheet("""
+            QPushButton {
+                background-color: #FFFFFF;
+                color: #DC2626;
+                border: 1px solid #FECACA;
+                border-radius: 4px;
+                padding: 4px 10px;
+            }
+            QPushButton:hover {
+                background-color: #FEF2F2;
+            }
+        """)
+        self.btn_clear_doc.clicked.connect(self.clear_attached_doc)
+        self.btn_clear_doc.setVisible(False)
+        doc_status_layout.addWidget(self.btn_clear_doc)
+
+        main_layout.addWidget(self.doc_status_frame)
 
         # 3. 协议编辑卡片 (白底、1px细线、微圆角)
         card_frame = QFrame(self)
@@ -520,24 +679,64 @@ class MainWindow(QMainWindow):
         state_str = "正常开启" if self.service_active else "已注销并清理本地缓存"
         self.toast.show_message(f"终端协议状态已切换为: {state_str}，点击发布后全网生效", is_success=self.service_active)
 
+    def on_doc_file_selected(self, file_path):
+        self.attached_doc_path = file_path
+        self.current_doc_url = ""
+        base_name = os.path.basename(file_path)
+        title_guess = os.path.splitext(base_name)[0]
+        self.set_doc_ui_bound(f"已选本地课件: {base_name}", title_guess)
+        self.toast.show_message(f"已选课件: {base_name}", is_success=True)
+
+    def set_doc_ui_bound(self, info_text, title_text):
+        self.lbl_doc_info.setText(info_text)
+        self.lbl_doc_info.setStyleSheet("color: #059669; font-weight: 500; border: none;")
+        self.edit_doc_title.setText(title_text)
+        self.edit_doc_title.setVisible(True)
+        self.btn_clear_doc.setVisible(True)
+
+    def clear_attached_doc(self, silent=False):
+        self.attached_doc_path = ""
+        self.current_doc_url = ""
+        self.current_doc_title = ""
+        self.lbl_doc_info.setText("未添加课件附件（手机端将自动以纯文字单锁模式运行）")
+        self.lbl_doc_info.setStyleSheet("color: #71717A; border: none;")
+        self.edit_doc_title.clear()
+        self.edit_doc_title.setVisible(False)
+        self.btn_clear_doc.setVisible(False)
+        if not silent:
+            self.toast.show_message("已清空课件，手机端将以纯文字模式下发", is_success=True)
+
     def load_current_json(self):
         if os.path.exists(AGREEMENT_JSON_PATH):
             try:
                 with open(AGREEMENT_JSON_PATH, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     self.edit_title.setText(data.get("title", "EVObike 标准图文服务与保密协议"))
-                    self.edit_version.setText(data.get("version", "2.0"))
+                    self.edit_version.setText(data.get("version", "2.1"))
                     self.edit_date.setText(data.get("updated_at", str(datetime.date.today())))
                     self.edit_content.setPlainText(data.get("content", ""))
                     self.service_active = data.get("service_active", True)
+
+                    # 载入课件配置状态
+                    doc_url = data.get("doc_url", data.get("ppt_url", data.get("pdf_url", "")))
+                    doc_title = data.get("doc_title", data.get("ppt_title", data.get("pdf_title", "")))
+                    if doc_url:
+                        self.current_doc_url = doc_url
+                        self.current_doc_title = doc_title
+                        self.attached_doc_path = ""
+                        self.set_doc_ui_bound(f"云端已绑定课件: {os.path.basename(doc_url)}", doc_title)
+                    else:
+                        self.clear_attached_doc(silent=True)
+
                     self.update_service_ui()
             except Exception as e:
                 self.toast.show_message(f"加载已有配置失败: {str(e)}", is_success=False)
         else:
             self.edit_title.setText("EVObike 标准图文服务与保密协议")
-            self.edit_version.setText("2.0")
+            self.edit_version.setText("2.1")
             self.edit_date.setText(str(datetime.date.today()))
             self.service_active = True
+            self.clear_attached_doc(silent=True)
             self.update_service_ui()
 
     def on_file_loaded(self, file_path):
@@ -586,16 +785,55 @@ class MainWindow(QMainWindow):
             self.toast.show_message("协议正文不能为空", is_success=False)
             return
 
+        extra_files = []
+        doc_url = ""
+        doc_title = self.edit_doc_title.text().strip()
+        doc_type = "pdf"
+
+        # 如果用户选取了本地课件文件，复制到仓库并在 git 中同步推送
+        if self.attached_doc_path and os.path.exists(self.attached_doc_path):
+            ext = os.path.splitext(self.attached_doc_path)[1].lower()
+            target_name = f"doc_attachment{ext}"
+            target_path = os.path.join(BASE_DIR, target_name)
+            try:
+                shutil.copy2(self.attached_doc_path, target_path)
+                extra_files.append(target_name)
+                doc_url = f"https://raw.githubusercontent.com/q514168795/agreement-storage/main/{target_name}"
+                doc_type = "pptx" if ext in [".ppt", ".pptx"] else "pdf"
+                if not doc_title:
+                    doc_title = os.path.splitext(os.path.basename(self.attached_doc_path))[0]
+            except Exception as e:
+                self.toast.show_message(f"复制课件文件失败: {str(e)}", is_success=False)
+                return
+        elif self.current_doc_url:
+            doc_url = self.current_doc_url
+            if not doc_title:
+                doc_title = self.current_doc_title
+            doc_type = "pptx" if doc_url.lower().endswith((".ppt", ".pptx")) else "pdf"
+
+        # 保留可能存在的既有多语言字段
+        existing_data = {}
+        if os.path.exists(AGREEMENT_JSON_PATH):
+            try:
+                with open(AGREEMENT_JSON_PATH, "r", encoding="utf-8") as f:
+                    existing_data = json.load(f)
+            except Exception:
+                pass
+
         payload = {
-            "version": version or "2.0",
+            **existing_data,
+            "version": version or "2.1",
             "title": title,
             "content": content,
             "updated_at": date_str or str(datetime.date.today()),
-            "app_version_code": 2,
-            "app_version_name": "2.0.0",
+            "app_version_code": 3,
+            "app_version_name": "2.1.0",
             "app_apk_url": "https://raw.githubusercontent.com/q514168795/agreement-storage/main/AgreementSign_Release.apk",
-            "app_update_notes": "1. 全新 shadcn/ui 极简高对比设计规范\n2. 标题居中与自适应图文排版\n3. 强制完整浏览条款后解锁电子签署\n4. 换装 EVObike 官方品牌标识与防伪印鉴",
-            "service_active": self.service_active
+            "app_update_notes": "1. 全新 shadcn/ui 极简高对比设计规范\n2. 支持 PDF/PPT 课件与双锁阅读达标拦截\n3. 凭证长图自适应合成 PPT 封面微缩与核验卡\n4. 换装 EVObike 官方品牌标识与防伪印鉴",
+            "service_active": self.service_active,
+            "doc_url": doc_url,
+            "doc_title": doc_title,
+            "doc_type": doc_type
         }
 
         # 写入本地 agreement.json
@@ -611,7 +849,7 @@ class MainWindow(QMainWindow):
         self.badge_status.setText("正在推送至 GitHub...")
 
         commit_msg = f"Update EVObike agreement: {title} v{version}"
-        self.worker = GitPushWorker(commit_msg)
+        self.worker = GitPushWorker(commit_msg, extra_files=extra_files)
         self.worker.finished_signal.connect(self.on_push_finished)
         self.worker.start()
 
