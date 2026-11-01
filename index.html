@@ -867,19 +867,8 @@
         </div>
         <div class="card-subtitle" id="txtStep3Subtitle">凭证已由本地内核合成 1200px 工业级超清长图</div>
 
-        <!-- 微信友好提示框 -->
-        <div class="wechat-tip-box">
-          <span style="font-size: 1.1rem;">📲</span>
-          <span id="txtWechatTip">长按下方凭证图片，可直接「发送给朋友」或「保存到手机相册」发至工作群</span>
-        </div>
-
-        <!-- 凭证核验长图预览 -->
-        <div class="cert-preview-wrapper">
-          <img id="certImg" alt="EVOBIKE 签署凭证长图">
-        </div>
-
-        <!-- 签署摘要 -->
-        <div class="summary-grid">
+        <!-- 签署摘要核对卡片 (置顶优先核验) -->
+        <div class="summary-grid" style="background:#fafafa; border:1px solid var(--border); border-radius:6px; padding:12px; margin-bottom:14px;">
           <div class="summary-item">
             <span class="label" id="lblSumStore">签署门店</span>
             <span class="val" id="sumStore">-</span>
@@ -898,19 +887,30 @@
           </div>
         </div>
 
-        <!-- 一键分享至微信群 主按钮 (自动弹出系统/微信分享) -->
-        <button type="button" class="btn-primary" id="btnShareWeChat" onclick="handleOneClickShare()">
+        <!-- 一键分享至微信群 主按钮 (置顶大按钮，自动唤起系统/微信分享) -->
+        <button type="button" class="btn-primary" id="btnShareWeChat" onclick="handleOneClickShare()" style="margin-top:0; margin-bottom:8px;">
           <span>📲</span>
           <span id="txtBtnShareWechat">一键分享高清长图至微信群</span>
         </button>
 
         <!-- 保存凭证至本地相册 次要操作 -->
-        <a id="btnDownloadCert" class="btn-secondary" style="width:100%; text-decoration:none; display:flex; justify-content:center; align-items:center; gap:6px; margin-top:8px;" download="EVOBIKE_签署凭证.png">
+        <a id="btnDownloadCert" class="btn-secondary" style="width:100%; text-decoration:none; display:flex; justify-content:center; align-items:center; gap:6px; margin-bottom:14px;" download="EVOBIKE_签署凭证.png">
           <span>💾</span>
           <span id="txtBtnDownload">保存凭证至本地相册</span>
         </a>
 
-        <button type="button" class="btn-secondary" style="width:100%; margin-top:8px;" onclick="goToStep(2)" id="btnReSign">
+        <!-- 微信友好提示框 -->
+        <div class="wechat-tip-box" style="margin-bottom:12px;">
+          <span style="font-size: 1.1rem;">💡</span>
+          <span id="txtWechatTip">点击上方「一键分享」自动调起微信群，或长按下方凭证直接发送</span>
+        </div>
+
+        <!-- 凭证核验长图预览 -->
+        <div class="cert-preview-wrapper">
+          <img id="certImg" alt="EVOBIKE 签署凭证长图">
+        </div>
+
+        <button type="button" class="btn-secondary" style="width:100%; margin-top:12px;" onclick="goToStep(2)" id="btnReSign">
           返回修改签名与信息
         </button>
       </div>
