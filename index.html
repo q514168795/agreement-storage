@@ -345,107 +345,177 @@
       pointer-events: none;
     }
 
-    /* 全屏幻灯片沉浸式考核 Overlay (1:1 还原 App FullscreenSlideViewer) */
+    /* 全屏幻灯片满屏无界沉浸考核 (彻底干掉挤压画面的实体黑条) */
     .fullscreen-viewer-modal {
       position: fixed;
       inset: 0;
       width: 100vw;
       height: 100vh;
-      background-color: #09090b;
+      background-color: #000000;
       z-index: 99999;
-      display: flex;
-      flex-direction: column;
       overflow: hidden;
     }
 
-    .fs-top-bar {
-      height: 48px;
-      background-color: #09090b;
-      border-bottom: 1px solid #27272a;
-      padding: 0 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
-    }
-
-    .fs-close-btn {
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: #fafafa;
-      border-radius: 6px;
-      width: 32px;
-      height: 32px;
+    /* 幻灯片舞台：100% 满屏铺满，顶天立地，完全吃满屏幕高度与宽度 */
+    .fs-stage {
+      position: absolute;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 15px;
+      background-color: #000000;
+      overflow: hidden;
+      touch-action: pan-y;
+      padding: 0;
+      margin: 0;
+    }
+
+    #fsPdfCanvas {
+      width: 100%;
+      height: 100%;
+      max-width: 100vw;
+      max-height: 100vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* 顶部半透明极简微悬浮栏 (完全不占用一像素的画面高度) */
+    .fs-top-bar {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      right: 12px;
+      height: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .fs-top-left-capsule {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(9, 9, 11, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 4px 12px 4px 6px;
+      border-radius: 9999px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+
+    .fs-close-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fafafa;
+      border-radius: 9999px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
     }
     .fs-close-btn:active {
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.35);
     }
 
     .fs-title {
       color: #fafafa;
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
       font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 50vw;
+      max-width: 45vw;
+    }
+
+    .fs-top-right-capsule {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(9, 9, 11, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
 
     .fs-page-badge {
       font-size: 0.75rem;
       font-weight: 600;
-      color: #a1a1aa;
+      color: #e4e4e7;
     }
 
-    .fs-stage {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #09090b;
-      position: relative;
-      overflow: hidden;
-      touch-action: pan-y;
-      padding: 10px;
-    }
-
-    #fsPdfCanvas {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
-      border-radius: 4px;
-    }
-
+    /* 底部半透明极简微悬浮栏 (完全不占用一像素的画面高度) */
     .fs-bottom-bar {
-      height: 56px;
-      background-color: #09090b;
-      border-top: 1px solid #27272a;
-      padding: 0 14px;
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      right: 12px;
+      height: 44px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-shrink: 0;
-      gap: 10px;
+      z-index: 20;
+      pointer-events: none;
     }
 
-    .fs-progress-text {
+    .fs-float-btn {
+      pointer-events: auto;
+      background: rgba(9, 9, 11, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fafafa;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 9999px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      transition: all 0.15s;
+    }
+    .fs-float-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .fs-float-btn:active:not(:disabled) {
+      background: rgba(39, 39, 42, 0.95);
+    }
+
+    .fs-progress-capsule {
+      pointer-events: auto;
+      background: rgba(9, 9, 11, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #d4d4d8;
       font-size: 0.75rem;
       font-weight: 600;
-      color: #a1a1aa;
+      padding: 6px 14px;
+      border-radius: 9999px;
     }
 
-    .slide-btn.btn-finish-study {
+    .fs-float-btn.btn-finish-study {
       background-color: #059669;
-      border-color: #10b981;
+      border-color: #34d399;
       color: #ffffff;
       font-weight: 700;
+      box-shadow: 0 4px 16px rgba(5, 150, 105, 0.5);
     }
 
     /* 微信右上角分享指引浮层 */
@@ -918,15 +988,20 @@
 
   </div>
 
-  <!-- 全屏课件沉浸式阅览器 (1:1 对齐原生 App FullscreenSlideViewer) -->
+  <!-- 全屏课件满屏无界沉浸阅览器 (100% 吃满屏幕高度，浮动极简微胶囊) -->
   <div id="fullscreenViewerModal" class="fullscreen-viewer-modal hidden">
-    <!-- 顶部独立控制栏 (固定 48px，不遮挡任何画面) -->
+    <!-- 幻灯片舞台：100% 满屏无界，顶天立地 -->
+    <div class="fs-stage" id="fsStage">
+      <canvas id="fsPdfCanvas"></canvas>
+    </div>
+
+    <!-- 顶部半透明浮动胶囊控制栏 (完全不占用一像素的画面高度) -->
     <div class="fs-top-bar">
-      <div style="display: flex; align-items: center; gap: 8px;">
+      <div class="fs-top-left-capsule">
         <button type="button" class="fs-close-btn" onclick="exitFullscreenDoc()" title="退出全屏">✕</button>
         <span class="fs-title" id="fsDocTitle">EVOBIKE 培训课件</span>
       </div>
-      <div style="display: flex; align-items: center; gap: 8px;">
+      <div class="fs-top-right-capsule">
         <span class="fs-page-badge" id="fsPageBadge">
           <span id="fsCurrentPage">1</span> / <span id="fsTotalPages">...</span>
         </span>
@@ -934,19 +1009,14 @@
       </div>
     </div>
 
-    <!-- 中间最大可视舞台 (支持手势横向轻扫) -->
-    <div class="fs-stage" id="fsStage">
-      <canvas id="fsPdfCanvas"></canvas>
-    </div>
-
-    <!-- 底部独立操作栏 (固定 56px) -->
+    <!-- 底部半透明浮动微胶囊栏 (完全不占用一像素的画面高度) -->
     <div class="fs-bottom-bar">
-      <button type="button" class="slide-btn" id="fsBtnPrev" onclick="fsPrevPage()">
+      <button type="button" class="fs-float-btn" id="fsBtnPrev" onclick="fsPrevPage()">
         <span>←</span>
         <span id="txtFsPrev">上一页</span>
       </button>
-      <div class="fs-progress-text" id="fsProgressText">已合格 0/14 页</div>
-      <button type="button" class="slide-btn" id="fsBtnNext" onclick="fsNextPage()" disabled>
+      <div class="fs-progress-capsule" id="fsProgressText">已合格 0/14 页</div>
+      <button type="button" class="fs-float-btn" id="fsBtnNext" onclick="fsNextPage()" disabled>
         <span id="txtFsNext">研读中 (3s)</span>
         <span>→</span>
       </button>
@@ -1496,8 +1566,9 @@
         const stage = document.getElementById('fsStage');
 
         const dpr = Math.max(window.devicePixelRatio || 1, 2);
-        const availWidth = Math.max(stage.clientWidth - 20, 300);
-        const availHeight = Math.max(stage.clientHeight - 20, 200);
+        // 使用 100vw 与 100vh 满屏顶天立地渲染，彻底消除黑条挤压
+        const availWidth = window.innerWidth;
+        const availHeight = window.innerHeight;
 
         const unscaledViewport = page.getViewport({ scale: 1 });
         const scaleX = availWidth / unscaledViewport.width;
@@ -1535,11 +1606,11 @@
         if (fsCurrentSlide >= totalSlides && approvedSlidePages.size >= totalSlides) {
           btnNext.disabled = false;
           btnNext.innerText = t('btn_finish_study_exit');
-          btnNext.className = "slide-btn btn-finish-study";
+          btnNext.className = "fs-float-btn btn-finish-study";
         } else {
           btnNext.disabled = false;
           btnNext.innerText = t('next_page') + " →";
-          btnNext.className = "slide-btn";
+          btnNext.className = "fs-float-btn";
         }
         return;
       }
@@ -1550,7 +1621,7 @@
       badge.innerText = "⏱ " + fsSecondsLeft + "s";
       badge.className = "timer-badge";
       btnNext.innerText = t('studying_countdown').replace('%d', fsSecondsLeft);
-      btnNext.className = "slide-btn";
+      btnNext.className = "fs-float-btn";
 
       fsTimerInterval = setInterval(() => {
         fsSecondsLeft--;
@@ -1567,11 +1638,11 @@
 
           if (fsCurrentSlide >= totalSlides && approvedSlidePages.size >= totalSlides) {
             btnNext.innerText = t('btn_finish_study_exit');
-            btnNext.className = "slide-btn btn-finish-study";
+            btnNext.className = "fs-float-btn btn-finish-study";
             isDocReadingCompleted = true;
           } else {
             btnNext.innerText = t('next_page') + " →";
-            btnNext.className = "slide-btn";
+            btnNext.className = "fs-float-btn";
           }
         }
       }, 1000);
