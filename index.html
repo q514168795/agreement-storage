@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
+  <title>EVOBIKE 协议签署</title>
+
+  <!-- PDF.js CDN (HTTPS, 权威根证书保障，零SSL报错) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <style>
+    /* shadcn/ui Design Tokens (Zinc Neutral) */
+    :root {
+      --background: #fafafa;
+      --foreground: #09090b;
+      --card: #ffffff;
+      --card-foreground: #09090b;
+      --primary: #18181b;
+      --primary-hover: #27272a;
+      --primary-foreground: #fafafa;
+      --muted: #f4f4f5;
+      --muted-foreground: #71717a;
+      --border: #e4e4e7;
+      --input: #e4e4e7;
+      --ring: #18181b;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --success-border: #a7f3d0;
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--background);
+      color: var(--foreground);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    }
+
+    /* 响应式容器：手机全宽 + 16px边距，平板/PC最大限制680px居中优雅展示 */
+    .app-container {
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* 顶部导航与品牌 */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 16px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .brand-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--foreground);
+    }
+
+    .lang-btn {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--foreground);
+      transition: background-color 0.15s;
+    }
+    .lang-btn:active {
+      background-color: var(--muted);
+    }
+
+    /* 步骤指示条 */
+    .steps-nav {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .step-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 8px 4px;
+      border-radius: 6px;
+      background-color: var(--muted);
+      color: var(--muted-foreground);
+      border: 1px solid transparent;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .step-badge.active {
+      background-color: var(--card);
+      color: var(--foreground);
+      border-color: var(--border);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .step-badge.completed {
+      background-color: var(--success-bg);
+      color: var(--success);
+      border-color: var(--success-border);
+    }
+
+    /* 卡片通用样式 */
+    .card {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-subtitle {
+      font-size: 0.8125rem;
+      color: var(--muted-foreground);
+      margin-bottom: 14px;
+    }
+
+    /* 标签与徽章 */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      background-color: var(--muted);
+      color: var(--muted-foreground);
+      border: 1px solid var(--border);
+    }
+    .badge-success {
+      background-color: var(--success-bg);
+      color: var(--success);
+      border-color: var(--success-border);
+    }
+
+    /* Tab 切换栏 */
+    .tab-bar {
+      display: flex;
+      background-color: var(--muted);
+      padding: 3px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      gap: 4px;
+    }
+    .tab-item {
+      flex: 1;
+      padding: 8px 10px;
+      text-align: center;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--muted-foreground);
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .tab-item.active {
+      background-color: var(--card);
+      color: var(--foreground);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    /* 协议文本阅读区域 */
+    .terms-box {
+      background-color: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px;
+      max-height: 380px;
+      overflow-y: auto;
+      font-size: 0.875rem;
+      color: #27272a;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .read-hint {
+      margin-top: 10px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--muted-foreground);
+    }
+    .read-hint.done {
+      color: var(--success);
+    }
+
+    /* PPT / PDF 幻灯片阅读考核组件 */
+    .slide-viewer-container {
+      width: 100%;
+      background-color: #09090b;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .slide-canvas-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #18181b;
+      min-height: 200px;
+      position: relative;
+    }
+
+    #pdfCanvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-height: 420px;
+      object-fit: contain;
+    }
+
+    .slide-controls {
+      width: 100%;
+      padding: 10px 14px;
+      background-color: #18181b;
+      border-top: 1px solid #27272a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slide-page-indicator {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #a1a1aa;
+    }
+
+    .slide-btn {
+      padding: 6px 14px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      border-radius: 6px;
+      border: 1px solid #3f3f46;
+      background-color: #27272a;
+      color: #fafafa;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .slide-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .timer-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background-color: #3f3f46;
+      color: #fef08a;
+    }
+    .timer-badge.done {
+      background-color: #064e3b;
+      color: #6ee7b7;
+    }
+
+    /* 表单输入组 */
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--foreground);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 0.9375rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background-color: var(--card);
+      color: var(--foreground);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus {
+      border-color: var(--ring);
+      box-shadow: 0 0 0 1px var(--ring);
+    }
+
+    /* 自适应签名板容器 */
+    .signature-card {
+      margin-top: 14px;
+    }
+
+    .signature-pad-wrapper {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      background-color: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      touch-action: none;
+      overflow: hidden;
+    }
+
+    #sigCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
+    .sig-placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.8125rem;
+      color: #a1a1aa;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .sig-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn-secondary {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      color: var(--foreground);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-secondary:active {
+      background-color: var(--muted);
+    }
+
+    /* 核心主操作按钮 (shadcn 规范纯黑高对比按钮) */
+    .btn-primary {
+      width: 100%;
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+      border: none;
+      padding: 12px 18px;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.15s, opacity 0.15s;
+      margin-top: 12px;
+    }
+    .btn-primary:active {
+      background-color: var(--primary-hover);
+    }
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    /* 凭证预览区域 */
+    .cert-preview-wrapper {
+      width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background-color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      margin-bottom: 16px;
+    }
+
+    #certImg {
+      width: 100%;
+      height: auto;
+      display: block;
+      user-select: none;
+      -webkit-touch-callout: default; /* 确保微信/iOS长按菜单正常弹出 */
+    }
+
+    .wechat-tip-box {
+      background-color: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 0.8125rem;
+      color: #065f46;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 0.8125rem;
+    }
+    .summary-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .summary-item .label {
+      color: var(--muted-foreground);
+      font-size: 0.75rem;
+    }
+    .summary-item .val {
+      font-weight: 600;
+      color: var(--foreground);
+    }
+
+    /* 全局 Toast 提示 */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background-color: #09090b;
+      color: #fafafa;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border: 1px solid #27272a;
+      opacity: 0;
+      transition: all 0.25s ease;
+      z-index: 9999;
+      pointer-events: none;
+      max-width: 90%;
+      text-align: center;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* 隐藏类 */
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- 顶部导航 -->
+    <header class="header">
+      <div class="brand-title">
+        <span>⚡</span>
+        <span id="txtAppTitle">EVOBIKE 协议签署</span>
+      </div>
+      <button class="lang-btn" id="btnToggleLang" onclick="toggleLanguage()">ES / 中文</button>
+    </header>
+
+    <!-- 步骤进度指示 -->
+    <nav class="steps-nav">
+      <div class="step-badge active" id="badgeStep1">1. 阅读通知</div>
+      <div class="step-badge" id="badgeStep2">2. 填写签名</div>
+      <div class="step-badge" id="badgeStep3">3. 预览分享</div>
+    </nav>
+
+    <!-- STEP 1: 阅读通知与课件考核 -->
+    <section id="sectionStep1">
+      <div class="card">
+        <div class="card-title">
+          <span id="txtAgreementTitle">Evobike 各分公司及门店仓库标准化管理方案</span>
+          <span class="badge" id="badgeVersion">v2.2</span>
+        </div>
+        <div class="card-subtitle" id="txtUpdatedDate">更新日期: 2026-10-31</div>
+
+        <!-- 选项卡切换（协议条款 / 培训课件） -->
+        <div class="tab-bar">
+          <div class="tab-item active" id="tabTerms" onclick="switchStep1Tab('terms')">
+            <span>📄</span>
+            <span id="txtTabTerms">1. 协议条款</span>
+            <span class="badge" id="badgeTermsRead">待阅读</span>
+          </div>
+          <div class="tab-item" id="tabDoc" onclick="switchStep1Tab('doc')">
+            <span>📊</span>
+            <span id="txtTabDoc">2. 培训课件 PPT</span>
+            <span class="badge" id="badgeDocRead">待阅读</span>
+          </div>
+        </div>
+
+        <!-- 子区域 1: 协议正文 -->
+        <div id="subTabTermsContent">
+          <div class="terms-box" id="termsScrollBox" onscroll="handleTermsScroll()">
+            <div id="termsContentText">正在加载协议条款正文...</div>
+          </div>
+          <div class="read-hint" id="termsReadHint">
+            <span>↓</span>
+            <span id="txtTermsHint">请向下滑动浏览完整条款以解锁下一步</span>
+          </div>
+        </div>
+
+        <!-- 子区域 2: 培训课件阅读考核器 (带3秒物理锁) -->
+        <div id="subTabDocContent" class="hidden">
+          <div class="slide-viewer-container">
+            <div class="slide-canvas-wrapper">
+              <canvas id="pdfCanvas"></canvas>
+            </div>
+            <div class="slide-controls">
+              <button class="slide-btn" id="btnPrevPage" onclick="prevSlidePage()">
+                <span>←</span>
+                <span id="txtPrevPage">上一页</span>
+              </button>
+              <div class="slide-page-indicator">
+                <span id="currentSlidePage">1</span> / <span id="totalSlidePages">...</span>
+                <span class="timer-badge" id="slideTimerBadge">⏱ 3s</span>
+              </div>
+              <button class="slide-btn" id="btnNextPage" onclick="nextSlidePage()" disabled>
+                <span id="txtNextPage">研读中 (3s)</span>
+                <span>→</span>
+              </button>
+            </div>
+          </div>
+          <div class="read-hint" id="docReadHint">
+            <span>⏱</span>
+            <span id="txtDocHint">每一页幻灯片须研读满 3 秒，浏览至末页以完成考核</span>
+          </div>
+        </div>
+
+        <!-- 解锁下一步按钮 -->
+        <button class="btn-primary" id="btnGoToStep2" onclick="goToStep(2)" disabled>
+          <span id="txtBtnNextStep">请完整阅读协议与课件以解锁 ➔</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 2: 登记信息与原笔迹签名 -->
+    <section id="sectionStep2" class="hidden">
+      <div class="card">
+        <div class="card-title">
+          <span id="txtFormTitle">签署方信息登记</span>
+          <span class="badge badge-success" id="badgeFormRequired">必填项</span>
+        </div>
+        <div class="card-subtitle" id="txtFormSubtitle">请如实填写您的所属门店与个人真实信息</div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <span id="lblStore">所属门店名称</span>
+            <span style="color:#ef4444">*</span>
+          </label>
+          <input type="text" class="form-input" id="inputStore" placeholder="例如: 科技园旗舰店 / Sucursal Centro" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <span id="lblName">真实姓名</span>
+            <span style="color:#ef4444">*</span>
+          </label>
+          <input type="text" class="form-input" id="inputName" placeholder="请输入签署人姓名" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <span id="lblPhone">联系手机号码</span>
+            <span style="color:#ef4444">*</span>
+          </label>
+          <input type="tel" class="form-input" id="inputPhone" placeholder="请输入10-11位手机号码" autocomplete="off">
+        </div>
+
+        <!-- 触屏自适应签名板 -->
+        <div class="signature-card">
+          <div class="form-label">
+            <span id="lblSignature">客户手写电子签名</span>
+            <span class="badge" id="badgeSignStatus">待签字</span>
+          </div>
+          <div class="signature-pad-wrapper" id="sigPadWrapper">
+            <canvas id="sigCanvas"></canvas>
+            <div class="sig-placeholder" id="sigPlaceholder">请在此区域内手写签名 (支持手指/触控笔)</div>
+          </div>
+          <div class="sig-actions">
+            <button type="button" class="btn-secondary" onclick="undoStroke()" id="btnUndo">撤销上一笔</button>
+            <button type="button" class="btn-secondary" onclick="clearSignature()" id="btnClear">清空签名</button>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btnGenerateCert" onclick="submitAndGenerateCert()">
+          <span id="txtBtnGenerate">确认信息并生成凭证 ➔</span>
+        </button>
+
+        <button type="button" class="btn-secondary" style="width:100%; margin-top:8px;" onclick="goToStep(1)" id="btnBackToStep1">
+          ← 返回上一步修改材料阅读
+        </button>
+      </div>
+    </section>
+
+    <!-- STEP 3: 1200px 超清长图凭证预览与分享 -->
+    <section id="sectionStep3" class="hidden">
+      <div class="card">
+        <div class="card-title">
+          <span id="txtStep3Title">⚡ EVOBIKE 电子签署凭证</span>
+          <span class="badge badge-success">✓ 签署完成</span>
+        </div>
+        <div class="card-subtitle" id="txtStep3Subtitle">凭证已由本地内核合成 1200px 工业级超清长图</div>
+
+        <!-- 微信友好提示框 -->
+        <div class="wechat-tip-box">
+          <span style="font-size: 1.1rem;">📲</span>
+          <span id="txtWechatTip">长按下方凭证图片，可直接「发送给朋友」或「保存到手机相册」发至工作群</span>
+        </div>
+
+        <!-- 凭证核验长图预览 -->
+        <div class="cert-preview-wrapper">
+          <img id="certImg" alt="EVOBIKE 签署凭证长图">
+        </div>
+
+        <!-- 签署摘要 -->
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="label" id="lblSumStore">签署门店</span>
+            <span class="val" id="sumStore">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="label" id="lblSumName">签署人</span>
+            <span class="val" id="sumName">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="label" id="lblSumPhone">联系电话</span>
+            <span class="val" id="sumPhone">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="label" id="lblSumCode">防伪存证码</span>
+            <span class="val" id="sumCode" style="font-family:monospace; font-size:0.75rem;">-</span>
+          </div>
+        </div>
+
+        <a id="btnDownloadCert" class="btn-primary" style="text-decoration:none;" download="EVOBIKE_签署凭证.png">
+          <span>💾</span>
+          <span id="txtBtnDownload">下载高清凭证至本地</span>
+        </a>
+
+        <button type="button" class="btn-secondary" style="width:100%; margin-top:8px;" onclick="goToStep(2)" id="btnReSign">
+          返回修改签名与信息
+        </button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Toast 浮动提示容器 -->
+  <div class="toast" id="appToast"></div>
+
+  <script>
+    /* ============================================================
+       1. 国际化字典 (中/西双语，与 App Strings.kt 严格对齐)
+       ============================================================ */
+    const I18N = {
+      zh: {
+        app_title: "EVOBIKE 协议签署",
+        lang_btn: "ES / 中文",
+        step_1: "1. 阅读通知",
+        step_2: "2. 填写签名",
+        step_3: "3. 预览分享",
+        tab_terms: "1. 协议条款",
+        tab_doc: "2. 培训课件 PPT",
+        badge_read: "已读✓",
+        badge_unread: "待阅读",
+        scroll_hint: "↓ 请向下滑动浏览完整条款以解锁下一步",
+        scroll_done: "✓ 协议条款已全部研读完毕",
+        doc_hint: "每一页幻灯片须研读满 3 秒，浏览至末页以完成考核",
+        prev_page: "上一页",
+        next_page: "下一页",
+        studying_countdown: "研读中 (%ds)",
+        btn_next_step: "我已完整阅读，下一步：填写签署信息 ➔",
+        btn_next_step_lock: "请完整阅读协议与课件以解锁 ➔",
+        form_title: "签署方信息登记",
+        form_required: "必填项",
+        form_subtitle: "请如实填写您的所属门店与个人真实信息",
+        lbl_store: "所属门店名称",
+        lbl_name: "真实姓名",
+        lbl_phone: "联系手机号码",
+        lbl_sig: "客户手写电子签名",
+        badge_to_sign: "待签字",
+        badge_signed: "已签字",
+        sig_placeholder: "请在此区域内手写签名 (支持手指/触控笔)",
+        btn_undo: "撤销上一笔",
+        btn_clear: "清空签名",
+        btn_generate: "确认信息并生成凭证 ➔",
+        btn_generating: "正在合成 1200px 超清凭证...",
+        btn_back_step1: "← 返回上一步修改材料阅读",
+        step3_title: "⚡ EVOBIKE 电子签署凭证",
+        step3_subtitle: "凭证已由本地内核合成 1200px 工业级超清长图",
+        wechat_tip: "长按下方凭证图片，可直接「发送给朋友」或「保存到手机相册」发至工作群",
+        btn_download: "下载高清凭证至本地",
+        btn_resign: "返回修改签名与信息",
+        sum_store: "签署门店",
+        sum_name: "签署人",
+        sum_phone: "联系电话",
+        sum_code: "防伪存证码",
+        toast_scroll_first: "请先向下滑动浏览完整条款正文",
+        toast_doc_first: "请完整翻阅培训课件至末页（每页3秒）",
+        toast_store_empty: "请先输入所属门店名称",
+        toast_name_empty: "请先输入签署人真实姓名",
+        toast_phone_empty: "请输入正确的10-11位手机号码",
+        toast_sig_empty: "请在手写框内完成有效签名",
+        toast_cert_success: "1200px 超清凭证长图合成成功！",
+        cert_brand: "⚡ EVOBIKE 电子签署确认凭证",
+        cert_meta: "协议版本: v%s  •  更新日期: %s  •  防伪编码: %s",
+        cert_doc_header: "【课件研读核验存证记录】",
+        cert_doc_name: "• 课件名称：《%s》",
+        cert_doc_status: "• 研读状态：✓ 已 100% 完整浏览至末页 (共 %d 页)",
+        cert_doc_hash: "• 存证指纹: %s",
+        cert_legal_1: "【法律效力声明】本凭证由 EVOBIKE 移动电子签名系统生成，已加盖时间戳与防伪数字签名。",
+        cert_legal_2: "双方确认该电子签名具备完全法律证据效力，未经授权涂改篡改无效。"
+      },
+      es: {
+        app_title: "Firma de Convenio EVOBIKE",
+        lang_btn: "中文 / ES",
+        step_1: "1. Leer Aviso",
+        step_2: "2. Llenar y Firmar",
+        step_3: "3. Vista y Enviar",
+        tab_terms: "1. Términos",
+        tab_doc: "2. Diapositivas PPT",
+        badge_read: "Leído✓",
+        badge_unread: "Pendiente",
+        scroll_hint: "↓ Deslice hacia abajo para leer todo y desbloquear",
+        scroll_done: "✓ Lectura de términos completada con éxito",
+        doc_hint: "Debe permanecer al menos 3 segundos en cada lámina antes de avanzar",
+        prev_page: "Anterior",
+        next_page: "Siguiente",
+        studying_countdown: "Leyendo (%ds)",
+        btn_next_step: "He leído completo, siguiente: Llenar datos ➔",
+        btn_next_step_lock: "Complete la lectura de términos y diapositivas ➔",
+        form_title: "Registro de Datos del Firmante",
+        form_required: "Requerido",
+        form_subtitle: "Ingrese los datos de sucursal y personales verídicos",
+        lbl_store: "Nombre de Sucursal",
+        lbl_name: "Nombre Completo",
+        lbl_phone: "Número de Teléfono",
+        lbl_sig: "Firma Electrónica Autógrafa",
+        badge_to_sign: "Pendiente",
+        badge_signed: "Firmado",
+        sig_placeholder: "Firme en este recuadro (con dedo o lápiz táctil)",
+        btn_undo: "Deshacer trazo",
+        btn_clear: "Borrar firma",
+        btn_generate: "Confirmar y Generar Comprobante ➔",
+        btn_generating: "Generando comprobante en 1200px HD...",
+        btn_back_step1: "← Regresar a leer el convenio",
+        step3_title: "⚡ Comprobante de Firma EVOBIKE",
+        step3_subtitle: "Comprobante generado localmente en ultra alta definición 1200px",
+        wechat_tip: "Mantenga presionada la imagen para guardarla o enviarla a su grupo de trabajo",
+        btn_download: "Descargar comprobante en HD",
+        btn_resign: "Volver a Modificar",
+        sum_store: "Sucursal",
+        sum_name: "Firmante",
+        sum_phone: "Teléfono",
+        sum_code: "Código de Autenticidad",
+        toast_scroll_first: "Por favor deslice hasta el final del texto",
+        toast_doc_first: "Por favor revise las diapositivas hasta el final (3s por lámina)",
+        toast_store_empty: "Por favor ingrese el nombre de la sucursal",
+        toast_name_empty: "Por favor ingrese el nombre completo",
+        toast_phone_empty: "Por favor ingrese un número de teléfono válido",
+        toast_sig_empty: "Por favor realice su firma en el recuadro",
+        toast_cert_success: "¡Comprobante HD 1200px generado con éxito!",
+        cert_brand: "⚡ COMPROBANTE DE FIRMA ELECTRÓNICA EVOBIKE",
+        cert_meta: "Versión: v%s  •  Actualizado: %s  •  Código: %s",
+        cert_doc_header: "VERIFICACIÓN DE MATERIAL ADJUNTO",
+        cert_doc_name: "• Material: 《%s》",
+        cert_doc_status: "• Estado: ✓ 100% Leído completo (Total %d láminas)",
+        cert_doc_hash: "• Hash Digital: %s",
+        cert_legal_1: "【VALIDEZ JURÍDICA】Este comprobante ha sido generado por el sistema digital EVOBIKE.",
+        cert_legal_2: "Ambas partes reconocen que la presente firma autógrafa posee plena validez probatoria conforme a la ley."
+      }
+    };
+
+    let currentLang = 'zh';
+    function t(key) {
+      return I18N[currentLang][key] || I18N['zh'][key] || key;
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'zh' ? 'es' : 'zh';
+      applyTranslations();
+      renderCurrentSlide();
+    }
+
+    function applyTranslations() {
+      document.getElementById('txtAppTitle').innerText = t('app_title');
+      document.getElementById('btnToggleLang').innerText = t('lang_btn');
+      document.getElementById('badgeStep1').innerText = t('step_1');
+      document.getElementById('badgeStep2').innerText = t('step_2');
+      document.getElementById('badgeStep3').innerText = t('step_3');
+      document.getElementById('txtTabTerms').innerText = t('tab_terms');
+      document.getElementById('txtTabDoc').innerText = t('tab_doc');
+      document.getElementById('txtPrevPage').innerText = t('prev_page');
+      document.getElementById('txtFormTitle').innerText = t('form_title');
+      document.getElementById('badgeFormRequired').innerText = t('form_required');
+      document.getElementById('txtFormSubtitle').innerText = t('form_subtitle');
+      document.getElementById('lblStore').innerText = t('lbl_store');
+      document.getElementById('lblName').innerText = t('lbl_name');
+      document.getElementById('lblPhone').innerText = t('lbl_phone');
+      document.getElementById('lblSignature').innerText = t('lbl_sig');
+      document.getElementById('sigPlaceholder').innerText = t('sig_placeholder');
+      document.getElementById('btnUndo').innerText = t('btn_undo');
+      document.getElementById('btnClear').innerText = t('btn_clear');
+      document.getElementById('btnGenerateCert').innerText = t('btn_generate');
+      document.getElementById('btnBackToStep1').innerText = t('btn_back_step1');
+      document.getElementById('txtStep3Title').innerText = t('step3_title');
+      document.getElementById('txtStep3Subtitle').innerText = t('step3_subtitle');
+      document.getElementById('txtWechatTip').innerText = t('wechat_tip');
+      document.getElementById('txtBtnDownload').innerText = t('btn_download');
+      document.getElementById('btnReSign').innerText = t('btn_resign');
+      document.getElementById('lblSumStore').innerText = t('sum_store');
+      document.getElementById('lblSumName').innerText = t('sum_name');
+      document.getElementById('lblSumPhone').innerText = t('sum_phone');
+      document.getElementById('lblSumCode').innerText = t('sum_code');
+
+      updateReadingBadgesUI();
+      updateStep1NextButton();
+    }
+
+    /* ============================================================
+       2. 协议数据源与加载 (同源相对路径，彻底避免跨域与SSL错误)
+       ============================================================ */
+    let agreementData = null;
+    let isTermsScrolledToBottom = false;
+    let isDocReadingCompleted = false;
+
+    async function loadAgreementData() {
+      try {
+        const resp = await fetch('./agreement.json?t=' + Date.now());
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
+        agreementData = await resp.json();
+
+        // 渲染基础信息
+        document.getElementById('txtAgreementTitle').innerText = agreementData.title || "EVOBIKE 协议";
+        document.getElementById('badgeVersion').innerText = "v" + (agreementData.version || "1.0");
+        document.getElementById('txtUpdatedDate').innerText = (currentLang === 'zh' ? "更新日期: " : "Actualizado: ") + (agreementData.updated_at || "2026-10-31");
+        document.getElementById('termsContentText').innerText = agreementData.content || "";
+
+        // 如果包含 PDF / 课件附件，加载课件阅读器
+        if (agreementData.doc_url || agreementData.has_doc !== false) {
+          initPdfViewer('./doc_attachment.pdf');
+        } else {
+          isDocReadingCompleted = true;
+          document.getElementById('tabDoc').classList.add('hidden');
+        }
+      } catch (err) {
+        console.error("加载协议失败:", err);
+        showToast("无法加载协议配置，请刷新重试");
+      }
+    }
+
+    /* 条款滚动监听 (必须滑到底部才标记已读) */
+    function handleTermsScroll() {
+      const box = document.getElementById('termsScrollBox');
+      const tolerance = 25; // 允许25px微误差
+      if (box.scrollTop + box.clientHeight >= box.scrollHeight - tolerance) {
+        if (!isTermsScrolledToBottom) {
+          isTermsScrolledToBottom = true;
+          updateReadingBadgesUI();
+          updateStep1NextButton();
+        }
+      }
+    }
+
+    function switchStep1Tab(tab) {
+      const tabTerms = document.getElementById('tabTerms');
+      const tabDoc = document.getElementById('tabDoc');
+      const subTerms = document.getElementById('subTabTermsContent');
+      const subDoc = document.getElementById('subTabDocContent');
+
+      if (tab === 'terms') {
+        tabTerms.classList.add('active');
+        tabDoc.classList.remove('active');
+        subTerms.classList.remove('hidden');
+        subDoc.classList.add('hidden');
+      } else {
+        tabTerms.classList.remove('active');
+        tabDoc.classList.add('active');
+        subTerms.classList.add('hidden');
+        subDoc.classList.remove('hidden');
+        // 激活时重新自适应渲染当前幻灯片
+        renderCurrentSlide();
+      }
+    }
+
+    function updateReadingBadgesUI() {
+      const badgeTerms = document.getElementById('badgeTermsRead');
+      const hintTerms = document.getElementById('txtTermsHint');
+      if (isTermsScrolledToBottom) {
+        badgeTerms.innerText = t('badge_read');
+        badgeTerms.className = "badge badge-success";
+        hintTerms.innerText = t('scroll_done');
+        document.getElementById('termsReadHint').className = "read-hint done";
+      } else {
+        badgeTerms.innerText = t('badge_unread');
+        badgeTerms.className = "badge";
+        hintTerms.innerText = t('scroll_hint');
+        document.getElementById('termsReadHint').className = "read-hint";
+      }
+
+      const badgeDoc = document.getElementById('badgeDocRead');
+      if (isDocReadingCompleted) {
+        badgeDoc.innerText = t('badge_read');
+        badgeDoc.className = "badge badge-success";
+      } else {
+        badgeDoc.innerText = t('badge_unread');
+        badgeDoc.className = "badge";
+      }
+    }
+
+    function updateStep1NextButton() {
+      const btn = document.getElementById('btnGoToStep2');
+      const txtBtn = document.getElementById('txtBtnNextStep');
+      if (isTermsScrolledToBottom && isDocReadingCompleted) {
+        btn.disabled = false;
+        txtBtn.innerText = t('btn_next_step');
+      } else {
+        btn.disabled = true;
+        txtBtn.innerText = t('btn_next_step_lock');
+      }
+    }
+
+    /* ============================================================
+       3. 课件 PDF 在线渲染器 (每页 3 秒物理防作弊倒计时锁)
+       ============================================================ */
+    let pdfDoc = null;
+    let currentSlide = 1;
+    let totalSlides = 1;
+    let slideTimerInterval = null;
+    let slideSecondsLeft = 3;
+    const approvedSlidePages = new Set();
+    let pdfCoverCanvas = null; // 用于最终长图封面微缩截取
+
+    async function initPdfViewer(pdfUrl) {
+      try {
+        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        pdfDoc = await loadingTask.promise;
+        totalSlides = pdfDoc.numPages;
+        document.getElementById('totalSlidePages').innerText = totalSlides;
+        renderCurrentSlide();
+      } catch (e) {
+        console.warn("未找到 doc_attachment.pdf 或加载失败:", e);
+        // 如果没有附件，默认视作无需考核课件
+        isDocReadingCompleted = true;
+        updateReadingBadgesUI();
+        updateStep1NextButton();
+      }
+    }
+
+    async function renderCurrentSlide() {
+      if (!pdfDoc) return;
+      try {
+        const page = await pdfDoc.getPage(currentSlide);
+        document.getElementById('currentSlidePage').innerText = currentSlide;
+
+        const canvas = document.getElementById('pdfCanvas');
+        const ctx = canvas.getContext('2d');
+        const wrapper = canvas.parentElement;
+
+        // 根据容器实际宽度自适应缩放 (考虑 devicePixelRatio 高清渲染)
+        const dpr = window.devicePixelRatio || 1;
+        const targetWidth = wrapper.clientWidth || 340;
+        const unscaledViewport = page.getViewport({ scale: 1 });
+        const scale = (targetWidth / unscaledViewport.width);
+        const viewport = page.getViewport({ scale: scale * dpr });
+
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.style.width = (viewport.width / dpr) + "px";
+        canvas.style.height = (viewport.height / dpr) + "px";
+
+        const renderContext = {
+          canvasContext: ctx,
+          viewport: viewport
+        };
+        await page.render(renderContext).promise;
+
+        // 保存第 1 页作为长图封面微缩凭证
+        if (currentSlide === 1 && !pdfCoverCanvas) {
+          pdfCoverCanvas = document.createElement('canvas');
+          pdfCoverCanvas.width = canvas.width;
+          pdfCoverCanvas.height = canvas.height;
+          pdfCoverCanvas.getContext('2d').drawImage(canvas, 0, 0);
+        }
+
+        startSlideTimer();
+      } catch (err) {
+        console.error("渲染幻灯片异常:", err);
+      }
+    }
+
+    function startSlideTimer() {
+      clearInterval(slideTimerInterval);
+      const timerBadge = document.getElementById('slideTimerBadge');
+      const btnNext = document.getElementById('btnNextPage');
+      const btnPrev = document.getElementById('btnPrevPage');
+
+      btnPrev.disabled = (currentSlide <= 1);
+
+      // 如果当前页已经完成过 3 秒学习，直接放行
+      if (approvedSlidePages.has(currentSlide)) {
+        timerBadge.innerText = "✓ 达标";
+        timerBadge.className = "timer-badge done";
+        btnNext.disabled = (currentSlide >= totalSlides);
+        document.getElementById('txtNextPage').innerText = t('next_page');
+        return;
+      }
+
+      // 启动 3 秒物理锁
+      slideSecondsLeft = 3;
+      btnNext.disabled = true;
+      timerBadge.innerText = "⏱ " + slideSecondsLeft + "s";
+      timerBadge.className = "timer-badge";
+      document.getElementById('txtNextPage').innerText = t('studying_countdown').replace('%d', slideSecondsLeft);
+
+      slideTimerInterval = setInterval(() => {
+        slideSecondsLeft--;
+        if (slideSecondsLeft > 0) {
+          timerBadge.innerText = "⏱ " + slideSecondsLeft + "s";
+          document.getElementById('txtNextPage').innerText = t('studying_countdown').replace('%d', slideSecondsLeft);
+        } else {
+          clearInterval(slideTimerInterval);
+          approvedSlidePages.add(currentSlide);
+          timerBadge.innerText = "✓ 达标";
+          timerBadge.className = "timer-badge done";
+          btnNext.disabled = false;
+          document.getElementById('txtNextPage').innerText = t('next_page');
+
+          // 如果翻到了最后一页并且全部合格
+          if (currentSlide === totalSlides && approvedSlidePages.size >= totalSlides) {
+            isDocReadingCompleted = true;
+            updateReadingBadgesUI();
+            updateStep1NextButton();
+          }
+        }
+      }, 1000);
+    }
+
+    function prevSlidePage() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        renderCurrentSlide();
+      }
+    }
+
+    function nextSlidePage() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        renderCurrentSlide();
+      } else {
+        // 最后一页完成
+        if (approvedSlidePages.size >= totalSlides) {
+          isDocReadingCompleted = true;
+          updateReadingBadgesUI();
+          updateStep1NextButton();
+          showToast("✓ 课件全部研读合格！已解锁签署");
+        }
+      }
+    }
+
+    /* ============================================================
+       4. 触屏自适应平滑签名板 (二次贝塞尔平滑插值 + 旋转记忆重绘)
+       ============================================================ */
+    const sigCanvas = document.getElementById('sigCanvas');
+    const sigCtx = sigCanvas.getContext('2d');
+    let strokes = [];      // 存储所有笔画轨迹: [ [ {x, y}, ... ], ... ]
+    let currentStroke = [];
+    let isDrawing = false;
+    let canvasWidth = 0;
+    let canvasHeight = 0;
+
+    function initSignaturePad() {
+      resizeSignatureCanvas();
+      window.addEventListener('resize', handleCanvasResize);
+      window.addEventListener('orientationchange', handleCanvasResize);
+
+      // 指针/触控事件监听 (支持手指与Apple Pencil/触控笔)
+      sigCanvas.addEventListener('pointerdown', handlePointerDown);
+      sigCanvas.addEventListener('pointermove', handlePointerMove);
+      sigCanvas.addEventListener('pointerup', handlePointerUp);
+      sigCanvas.addEventListener('pointercancel', handlePointerUp);
+    }
+
+    function resizeSignatureCanvas() {
+      const wrapper = document.getElementById('sigPadWrapper');
+      const dpr = Math.max(window.devicePixelRatio || 1, 1);
+      const rect = wrapper.getBoundingClientRect();
+
+      canvasWidth = rect.width;
+      canvasHeight = rect.height;
+
+      sigCanvas.width = canvasWidth * dpr;
+      sigCanvas.height = canvasHeight * dpr;
+      sigCanvas.style.width = canvasWidth + "px";
+      sigCanvas.style.height = canvasHeight + "px";
+
+      sigCtx.scale(dpr, dpr);
+      redrawStrokes();
+    }
+
+    function handleCanvasResize() {
+      // 屏幕旋转或缩放时，重置尺寸并精准重绘，笔画绝不丢失或发虚
+      resizeSignatureCanvas();
+      // 同步重绘 PPT 幻灯片
+      renderCurrentSlide();
+    }
+
+    function getCanvasCoordinates(e) {
+      const rect = sigCanvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
+
+    function handlePointerDown(e) {
+      isDrawing = true;
+      sigCanvas.setPointerCapture(e.pointerId);
+      const pt = getCanvasCoordinates(e);
+      currentStroke = [pt];
+      strokes.push(currentStroke);
+      document.getElementById('sigPlaceholder').classList.add('hidden');
+      document.getElementById('badgeSignStatus').innerText = t('badge_signed');
+      document.getElementById('badgeSignStatus').className = "badge badge-success";
+
+      sigCtx.beginPath();
+      sigCtx.arc(pt.x, pt.y, 2, 0, Math.PI * 2);
+      sigCtx.fillStyle = "#09090b";
+      sigCtx.fill();
+    }
+
+    function handlePointerMove(e) {
+      if (!isDrawing) return;
+      const pt = getCanvasCoordinates(e);
+      currentStroke.push(pt);
+
+      if (currentStroke.length >= 3) {
+        const p0 = currentStroke[currentStroke.length - 3];
+        const p1 = currentStroke[currentStroke.length - 2];
+        const p2 = currentStroke[currentStroke.length - 1];
+        const mid1 = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
+        const mid2 = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+
+        sigCtx.beginPath();
+        sigCtx.moveTo(mid1.x, mid1.y);
+        sigCtx.quadraticCurveTo(p1.x, p1.y, mid2.x, mid2.y);
+        sigCtx.strokeStyle = "#09090b";
+        sigCtx.lineWidth = 3.5;
+        sigCtx.lineCap = "round";
+        sigCtx.lineJoin = "round";
+        sigCtx.stroke();
+      }
+    }
+
+    function handlePointerUp(e) {
+      if (!isDrawing) return;
+      isDrawing = false;
+      try { sigCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
+    }
+
+    function redrawStrokes() {
+      sigCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+      if (strokes.length === 0) {
+        document.getElementById('sigPlaceholder').classList.remove('hidden');
+        document.getElementById('badgeSignStatus').innerText = t('badge_to_sign');
+        document.getElementById('badgeSignStatus').className = "badge";
+        return;
+      }
+
+      document.getElementById('sigPlaceholder').classList.add('hidden');
+      document.getElementById('badgeSignStatus').innerText = t('badge_signed');
+      document.getElementById('badgeSignStatus').className = "badge badge-success";
+
+      for (const stroke of strokes) {
+        if (!stroke || stroke.length === 0) continue;
+        if (stroke.length === 1) {
+          sigCtx.beginPath();
+          sigCtx.arc(stroke[0].x, stroke[0].y, 2, 0, Math.PI * 2);
+          sigCtx.fillStyle = "#09090b";
+          sigCtx.fill();
+          continue;
+        }
+        sigCtx.beginPath();
+        sigCtx.moveTo(stroke[0].x, stroke[0].y);
+        for (let i = 1; i < stroke.length; i++) {
+          const prev = stroke[i - 1];
+          const curr = stroke[i];
+          const midX = (prev.x + curr.x) / 2;
+          const midY = (prev.y + curr.y) / 2;
+          sigCtx.quadraticCurveTo(prev.x, prev.y, midX, midY);
+        }
+        const last = stroke[stroke.length - 1];
+        sigCtx.lineTo(last.x, last.y);
+        sigCtx.strokeStyle = "#09090b";
+        sigCtx.lineWidth = 3.5;
+        sigCtx.lineCap = "round";
+        sigCtx.lineJoin = "round";
+        sigCtx.stroke();
+      }
+    }
+
+    function undoStroke() {
+      if (strokes.length > 0) {
+        strokes.pop();
+        redrawStrokes();
+      }
+    }
+
+    function clearSignature() {
+      strokes = [];
+      redrawStrokes();
+    }
+
+    function isSignatureValid() {
+      if (strokes.length === 0) return false;
+      let totalPoints = 0;
+      for (const s of strokes) totalPoints += s.length;
+      return totalPoints >= 6; // 至少绘制了数个坐标点，防止随便点一个点应付
+    }
+
+    /* ============================================================
+       5. 步骤切换与校验机制
+       ============================================================ */
+    function goToStep(step) {
+      if (step === 2) {
+        if (!isTermsScrolledToBottom) {
+          showToast(t('toast_scroll_first'));
+          return;
+        }
+        if (!isDocReadingCompleted && pdfDoc) {
+          showToast(t('toast_doc_first'));
+          return;
+        }
+      }
+
+      document.getElementById('sectionStep1').classList.toggle('hidden', step !== 1);
+      document.getElementById('sectionStep2').classList.toggle('hidden', step !== 2);
+      document.getElementById('sectionStep3').classList.toggle('hidden', step !== 3);
+
+      const b1 = document.getElementById('badgeStep1');
+      const b2 = document.getElementById('badgeStep2');
+      const b3 = document.getElementById('badgeStep3');
+
+      b1.className = step === 1 ? "step-badge active" : (step > 1 ? "step-badge completed" : "step-badge");
+      b2.className = step === 2 ? "step-badge active" : (step > 2 ? "step-badge completed" : "step-badge");
+      b3.className = step === 3 ? "step-badge active completed" : "step-badge";
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (step === 2) {
+        setTimeout(resizeSignatureCanvas, 100);
+      }
+    }
+
+    /* ============================================================
+       6. 1200px 超清长图凭证本地合成内核 (1:1 还原 Android 凭证规范)
+       ============================================================ */
+    async function submitAndGenerateCert() {
+      const store = document.getElementById('inputStore').value.trim();
+      const name = document.getElementById('inputName').value.trim();
+      const phone = document.getElementById('inputPhone').value.trim();
+
+      if (!store) {
+        showToast(t('toast_store_empty'));
+        document.getElementById('inputStore').focus();
+        return;
+      }
+      if (!name) {
+        showToast(t('toast_name_empty'));
+        document.getElementById('inputName').focus();
+        return;
+      }
+      if (!phone || phone.length < 8) {
+        showToast(t('toast_phone_empty'));
+        document.getElementById('inputPhone').focus();
+        return;
+      }
+      if (!isSignatureValid()) {
+        showToast(t('toast_sig_empty'));
+        return;
+      }
+
+      const btnGen = document.getElementById('btnGenerateCert');
+      btnGen.disabled = true;
+      btnGen.innerText = t('btn_generating');
+
+      setTimeout(async () => {
+        try {
+          const certDataUrl = await synthesize1200pxCertificate(store, name, phone);
+          document.getElementById('certImg').src = certDataUrl;
+          document.getElementById('btnDownloadCert').href = certDataUrl;
+          document.getElementById('btnDownloadCert').download = `EVOBIKE_协议签署_${name}_${Date.now()}.png`;
+
+          document.getElementById('sumStore').innerText = store;
+          document.getElementById('sumName').innerText = name;
+          document.getElementById('sumPhone').innerText = phone;
+
+          goToStep(3);
+          showToast(t('toast_cert_success'));
+        } catch (e) {
+          console.error("凭证合成失败:", e);
+          showToast("凭证合成失败，请重试");
+        } finally {
+          btnGen.disabled = false;
+          btnGen.innerText = t('btn_generate');
+        }
+      }, 50);
+    }
+
+    async function synthesize1200pxCertificate(store, name, phone) {
+      const width = 1200;
+      const padding = 70;
+      const contentWidth = width - padding * 2; // 1060px
+
+      // 1. 离线测量与文本断行计算
+      const offscreenCanvas = document.createElement('canvas');
+      const ctx = offscreenCanvas.getContext('2d');
+
+      const bodyText = agreementData ? (agreementData.content || "") : "";
+      const bodyLines = wrapCanvasText(ctx, bodyText, contentWidth, "30px -apple-system, BlinkMacSystemFont, sans-serif");
+      const bodyLineHeight = 44;
+      const bodySectionHeight = bodyLines.length * bodyLineHeight + 40;
+
+      const hasDoc = !!pdfDoc;
+      const docSectionHeight = hasDoc ? 250 : 0;
+      const formSectionHeight = 280;
+      const sigSectionHeight = 300;
+      const headerHeight = 230;
+      const footerHeight = 150;
+
+      const totalHeight = padding * 2 + headerHeight + bodySectionHeight + docSectionHeight + formSectionHeight + sigSectionHeight + footerHeight;
+
+      // 2. 初始化 1200px 超清画布
+      offscreenCanvas.width = width;
+      offscreenCanvas.height = totalHeight;
+
+      // 纯白底色
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, totalHeight);
+
+      // 外层圆角描边 (shadcn 16px 风格)
+      ctx.strokeStyle = "#e4e4e7";
+      ctx.lineWidth = 2.5;
+      drawRoundRect(ctx, 24, 24, width - 48, totalHeight - 48, 16);
+      ctx.stroke();
+
+      let currentY = padding + 20;
+
+      // --- Header: 品牌抬头 ---
+      ctx.fillStyle = "#09090b";
+      ctx.font = "bold 28px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(t('cert_brand'), width / 2, currentY);
+      currentY += 56;
+
+      // 协议主标题
+      ctx.fillStyle = "#09090b";
+      ctx.font = "bold 44px -apple-system, BlinkMacSystemFont, sans-serif";
+      const title = agreementData ? agreementData.title : "EVOBIKE 协议签署凭证";
+      ctx.fillText(title, width / 2, currentY);
+      currentY += 50;
+
+      // 版本与防伪编码
+      const now = new Date();
+      const timeStr = formatDate(now);
+      const signCode = "EVO-" + formatCodeDate(now) + "-" + Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('sumCode').innerText = signCode;
+
+      const metaText = t('cert_meta')
+        .replace('%s', agreementData ? agreementData.version : "2.2")
+        .replace('%s', agreementData ? agreementData.updated_at : "2026-10-31")
+        .replace('%s', signCode);
+
+      ctx.fillStyle = "#71717a";
+      ctx.font = "24px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(metaText, width / 2, currentY);
+      currentY += 36;
+
+      // 分割线
+      ctx.beginPath();
+      ctx.moveTo(padding, currentY);
+      ctx.lineTo(width - padding, currentY);
+      ctx.strokeStyle = "#e4e4e7";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      currentY += 45;
+
+      // --- Body: 正文段落排版 ---
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#18181b";
+      ctx.font = "30px -apple-system, BlinkMacSystemFont, sans-serif";
+
+      for (const line of bodyLines) {
+        ctx.fillText(line, padding, currentY);
+        currentY += bodyLineHeight;
+      }
+      currentY += 30;
+
+      // 分割线
+      ctx.beginPath();
+      ctx.moveTo(padding, currentY);
+      ctx.lineTo(width - padding, currentY);
+      ctx.strokeStyle = "#e4e4e7";
+      ctx.stroke();
+      currentY += 40;
+
+      // --- Section: 课件研读核验存证卡片 ---
+      if (hasDoc) {
+        const cardH = 190;
+        ctx.fillStyle = "#fafafa";
+        drawRoundRect(ctx, padding, currentY, contentWidth, cardH, 12);
+        ctx.fill();
+        ctx.strokeStyle = "#e4e4e7";
+        ctx.stroke();
+
+        // 绘制封面缩略图
+        const thumbX = padding + 24;
+        const thumbY = currentY + 20;
+        const thumbW = 220;
+        const thumbH = 150;
+
+        if (pdfCoverCanvas) {
+          ctx.save();
+          drawRoundRect(ctx, thumbX, thumbY, thumbW, thumbH, 8);
+          ctx.clip();
+          ctx.drawImage(pdfCoverCanvas, thumbX, thumbY, thumbW, thumbH);
+          ctx.restore();
+          ctx.strokeStyle = "#e4e4e7";
+          drawRoundRect(ctx, thumbX, thumbY, thumbW, thumbH, 8);
+          ctx.stroke();
+        }
+
+        // 右侧存证说明
+        const textX = thumbX + thumbW + 28;
+        let lineY = currentY + 48;
+
+        ctx.fillStyle = "#09090b";
+        ctx.font = "bold 26px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText(t('cert_doc_header'), textX, lineY);
+
+        lineY += 38;
+        ctx.fillStyle = "#27272a";
+        ctx.font = "22px -apple-system, BlinkMacSystemFont, sans-serif";
+        const docTitle = agreementData ? (agreementData.doc_title || "EVOBIKE标准化管理方案") : "培训课件";
+        ctx.fillText(t('cert_doc_name').replace('%s', docTitle), textX, lineY);
+
+        lineY += 36;
+        ctx.fillStyle = "#059669";
+        ctx.font = "bold 22px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.fillText(t('cert_doc_status').replace('%d', totalSlides), textX, lineY);
+
+        lineY += 34;
+        ctx.fillStyle = "#71717a";
+        ctx.font = "19px monospace";
+        const hashStr = "SHA256:" + Math.abs((docTitle + totalSlides).split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)).toString(16).toUpperCase().padStart(8, '0') + "A8F1";
+        ctx.fillText(t('cert_doc_hash').replace('%s', hashStr), textX, lineY);
+
+        currentY += cardH + 40;
+        ctx.beginPath();
+        ctx.moveTo(padding, currentY);
+        ctx.lineTo(width - padding, currentY);
+        ctx.strokeStyle = "#e4e4e7";
+        ctx.stroke();
+        currentY += 40;
+      }
+
+      // --- Section: 签署人信息卡片 ---
+      const infoCardH = 220;
+      ctx.fillStyle = "#fafafa";
+      drawRoundRect(ctx, padding, currentY, contentWidth, infoCardH, 12);
+      ctx.fill();
+      ctx.strokeStyle = "#e4e4e7";
+      ctx.stroke();
+
+      let infoY = currentY + 54;
+      ctx.font = "bold 26px -apple-system, BlinkMacSystemFont, sans-serif";
+
+      // 门店
+      ctx.fillStyle = "#18181b";
+      ctx.fillText((currentLang === 'zh' ? "签署门店：" : "Sucursal: "), padding + 32, infoY);
+      ctx.fillStyle = "#27272a";
+      ctx.font = "26px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(store, padding + 200, infoY);
+
+      // 姓名 & 电话
+      infoY += 52;
+      ctx.fillStyle = "#18181b";
+      ctx.font = "bold 26px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText((currentLang === 'zh' ? "签署人：" : "Firmante: "), padding + 32, infoY);
+      ctx.fillStyle = "#27272a";
+      ctx.font = "26px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(name, padding + 200, infoY);
+
+      ctx.fillStyle = "#18181b";
+      ctx.font = "bold 26px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText((currentLang === 'zh' ? "联系电话：" : "Teléfono: "), padding + 540, infoY);
+      ctx.fillStyle = "#27272a";
+      ctx.font = "26px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(phone, padding + 700, infoY);
+
+      // 时间
+      infoY += 52;
+      ctx.fillStyle = "#18181b";
+      ctx.font = "bold 26px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText((currentLang === 'zh' ? "签署时间：" : "Fecha y Hora: "), padding + 32, infoY);
+      ctx.fillStyle = "#27272a";
+      ctx.font = "26px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(timeStr, padding + 200, infoY);
+
+      currentY += infoCardH + 36;
+
+      // --- Section: 手写原笔迹签名框 ---
+      ctx.fillStyle = "#18181b";
+      ctx.font = "bold 28px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(currentLang === 'zh' ? "客户电子签名 (Signature)：" : "Firma Autógrafa del Titular (Signature):", padding, currentY);
+      currentY += 24;
+
+      const sigBoxH = 220;
+      ctx.fillStyle = "#fafafa";
+      drawRoundRect(ctx, padding, currentY, contentWidth, sigBoxH, 12);
+      ctx.fill();
+      ctx.strokeStyle = "#e4e4e7";
+      ctx.stroke();
+
+      // 将用户的矢量笔迹按比例映射至 1200px 凭证手写框内
+      if (strokes.length > 0 && canvasWidth > 0 && canvasHeight > 0) {
+        const scaleX = (contentWidth - 60) / canvasWidth;
+        const scaleY = (sigBoxH - 50) / canvasHeight;
+        const scale = Math.min(scaleX, scaleY);
+        const offsetX = padding + 30;
+        const offsetY = currentY + 25;
+
+        ctx.strokeStyle = "#09090b";
+        ctx.lineWidth = 6;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        for (const stroke of strokes) {
+          if (!stroke || stroke.length === 0) continue;
+          if (stroke.length === 1) {
+            ctx.beginPath();
+            ctx.arc(offsetX + stroke[0].x * scale, offsetY + stroke[0].y * scale, 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = "#09090b";
+            ctx.fill();
+            continue;
+          }
+          ctx.beginPath();
+          ctx.moveTo(offsetX + stroke[0].x * scale, offsetY + stroke[0].y * scale);
+          for (let i = 1; i < stroke.length; i++) {
+            const prev = stroke[i - 1];
+            const curr = stroke[i];
+            const midX = (prev.x + curr.x) / 2;
+            const midY = (prev.y + curr.y) / 2;
+            ctx.quadraticCurveTo(
+              offsetX + prev.x * scale,
+              offsetY + prev.y * scale,
+              offsetX + midX * scale,
+              offsetY + midY * scale
+            );
+          }
+          const last = stroke[stroke.length - 1];
+          ctx.lineTo(offsetX + last.x * scale, offsetY + last.y * scale);
+          ctx.stroke();
+        }
+      }
+      currentY += sigBoxH + 46;
+
+      // --- Footer: 法律效力声明 ---
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#71717a";
+      ctx.font = "22px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(t('cert_legal_1'), width / 2, currentY);
+      currentY += 34;
+      ctx.fillText(t('cert_legal_2'), width / 2, currentY);
+
+      return offscreenCanvas.toDataURL('image/png');
+    }
+
+    /* 文本断行工具函数 */
+    function wrapCanvasText(ctx, text, maxWidth, font) {
+      ctx.font = font;
+      const rawLines = text.split('\n');
+      const lines = [];
+
+      for (let r = 0; r < rawLines.length; r++) {
+        const paragraph = rawLines[r];
+        if (!paragraph.trim()) {
+          lines.push("");
+          continue;
+        }
+        let currentLine = "";
+        for (let i = 0; i < paragraph.length; i++) {
+          const char = paragraph[i];
+          const testLine = currentLine + char;
+          const testWidth = ctx.measureText(testLine).width;
+          if (testWidth > maxWidth && currentLine.length > 0) {
+            lines.push(currentLine);
+            currentLine = char;
+          } else {
+            currentLine = testLine;
+          }
+        }
+        if (currentLine) lines.push(currentLine);
+      }
+      return lines;
+    }
+
+    /* 绘制圆角矩形路径 */
+    function drawRoundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function formatDate(date) {
+      const pad = n => n.toString().padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    }
+
+    function formatCodeDate(date) {
+      const pad = n => n.toString().padStart(2, '0');
+      return `${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}-${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`;
+    }
+
+    /* 浮动 Toast 提示组件 */
+    let toastTimeout = null;
+    function showToast(msg) {
+      const toast = document.getElementById('appToast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2400);
+    }
+
+    // 初始化入口
+    window.addEventListener('DOMContentLoaded', () => {
+      initSignaturePad();
+      loadAgreementData();
+      applyTranslations();
+    });
+  </script>
+</body>
+</html>

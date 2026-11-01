@@ -49,8 +49,11 @@ class GitPushWorker(QThread):
 
     def run(self):
         try:
-            # 1. git add agreement.json 与可能存在的 APK 更新包及课件附件
+            # 1. git add agreement.json, index.html 与可能存在的 APK 更新包及课件附件
             files_to_add = ["agreement.json"]
+            index_path = os.path.join(BASE_DIR, "index.html")
+            if os.path.exists(index_path):
+                files_to_add.append("index.html")
             apk_path = os.path.join(BASE_DIR, "AgreementSign_Release.apk")
             if os.path.exists(apk_path):
                 files_to_add.append("AgreementSign_Release.apk")
