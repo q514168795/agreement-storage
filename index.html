@@ -292,6 +292,198 @@
       cursor: not-allowed;
     }
 
+    /* 研读考核规则说明卡片 (1:1 原生 App 规范) */
+    .exam-rules-card {
+      background-color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+    .exam-rules-header {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--foreground);
+      margin-bottom: 4px;
+    }
+    .exam-rules-sub {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted-foreground);
+      margin-bottom: 6px;
+    }
+    .exam-rule-item {
+      font-size: 0.75rem;
+      color: #3f3f46;
+      line-height: 1.5;
+      margin-bottom: 2px;
+    }
+
+    .btn-fs-trigger {
+      width: 100%;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .btn-fs-trigger.passed {
+      background-color: var(--success);
+      color: #ffffff;
+    }
+
+    .tap-fullscreen-hint {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(9, 9, 11, 0.75);
+      color: #fafafa;
+      font-size: 0.6875rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+
+    /* 全屏幻灯片沉浸式考核 Overlay (1:1 还原 App FullscreenSlideViewer) */
+    .fullscreen-viewer-modal {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #09090b;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .fs-top-bar {
+      height: 48px;
+      background-color: #09090b;
+      border-bottom: 1px solid #27272a;
+      padding: 0 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .fs-close-btn {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fafafa;
+      border-radius: 6px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .fs-close-btn:active {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .fs-title {
+      color: #fafafa;
+      font-size: 0.875rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 50vw;
+    }
+
+    .fs-page-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #a1a1aa;
+    }
+
+    .fs-stage {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #09090b;
+      position: relative;
+      overflow: hidden;
+      touch-action: pan-y;
+      padding: 10px;
+    }
+
+    #fsPdfCanvas {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+      border-radius: 4px;
+    }
+
+    .fs-bottom-bar {
+      height: 56px;
+      background-color: #09090b;
+      border-top: 1px solid #27272a;
+      padding: 0 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      gap: 10px;
+    }
+
+    .fs-progress-text {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #a1a1aa;
+    }
+
+    .slide-btn.btn-finish-study {
+      background-color: #059669;
+      border-color: #10b981;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    /* 微信右上角分享指引浮层 */
+    .wechat-share-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(9, 9, 11, 0.88);
+      z-index: 100000;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      padding: 16px 20px;
+      color: #ffffff;
+    }
+
+    .wechat-share-arrow {
+      font-size: 44px;
+      line-height: 1;
+      animation: bounceShare 1.2s infinite;
+      margin-right: 12px;
+      color: #34d399;
+    }
+
+    @keyframes bounceShare {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .wechat-share-card {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 16px 18px;
+      text-align: right;
+      backdrop-filter: blur(12px);
+      max-width: 300px;
+    }
+
     .timer-badge {
       display: inline-flex;
       align-items: center;
@@ -557,11 +749,27 @@
           </div>
         </div>
 
-        <!-- 子区域 2: 培训课件阅读考核器 (带3秒物理锁) -->
+        <!-- 子区域 2: 培训课件阅读考核器 (带3秒物理锁与全屏考核) -->
         <div id="subTabDocContent" class="hidden">
-          <div class="slide-viewer-container">
-            <div class="slide-canvas-wrapper">
+          <!-- 考核规则说明卡片 (1:1 对齐原生 App 规范) -->
+          <div class="exam-rules-card">
+            <div class="exam-rules-header" id="txtExamHeader">⚡ EVOBIKE 培训课件强制研读考核</div>
+            <div class="exam-rules-sub" id="txtExamRulesTitle">【研读考核规则说明】</div>
+            <div class="exam-rule-item" id="txtExamRule1">• 点击下方按钮将自动进入【横向全屏】沉浸模式，确保宽屏幻灯片最佳阅读体验。</div>
+            <div class="exam-rule-item" id="txtExamRule2">• 每一页幻灯片必须停留研读满 3 秒，未达标前禁止翻页。</div>
+            <div class="exam-rule-item" id="txtExamRule3">• 翻阅至末页并读满后，系统将自动记录研读合格并解锁下一步电子签署。</div>
+          </div>
+
+          <!-- 全屏考核触发主按钮 (高对比大按钮) -->
+          <button type="button" class="btn-primary btn-fs-trigger" id="btnEnterFsDoc" onclick="enterFullscreenDoc()">
+            <span id="txtBtnEnterFs">⛶ 进入全屏研读 (每页满3秒) ➔</span>
+          </button>
+
+          <!-- 内联预览器 (保留常规预览) -->
+          <div class="slide-viewer-container" style="margin-top: 14px;">
+            <div class="slide-canvas-wrapper" onclick="enterFullscreenDoc()" style="cursor: pointer;">
               <canvas id="pdfCanvas"></canvas>
+              <div class="tap-fullscreen-hint">⛶ 点击放大全屏阅读</div>
             </div>
             <div class="slide-controls">
               <button class="slide-btn" id="btnPrevPage" onclick="prevSlidePage()">
@@ -690,9 +898,16 @@
           </div>
         </div>
 
-        <a id="btnDownloadCert" class="btn-primary" style="text-decoration:none;" download="EVOBIKE_签署凭证.png">
+        <!-- 一键分享至微信群 主按钮 (自动弹出系统/微信分享) -->
+        <button type="button" class="btn-primary" id="btnShareWeChat" onclick="handleOneClickShare()">
+          <span>📲</span>
+          <span id="txtBtnShareWechat">一键分享高清长图至微信群</span>
+        </button>
+
+        <!-- 保存凭证至本地相册 次要操作 -->
+        <a id="btnDownloadCert" class="btn-secondary" style="width:100%; text-decoration:none; display:flex; justify-content:center; align-items:center; gap:6px; margin-top:8px;" download="EVOBIKE_签署凭证.png">
           <span>💾</span>
-          <span id="txtBtnDownload">下载高清凭证至本地</span>
+          <span id="txtBtnDownload">保存凭证至本地相册</span>
         </a>
 
         <button type="button" class="btn-secondary" style="width:100%; margin-top:8px;" onclick="goToStep(2)" id="btnReSign">
@@ -701,6 +916,54 @@
       </div>
     </section>
 
+  </div>
+
+  <!-- 全屏课件沉浸式阅览器 (1:1 对齐原生 App FullscreenSlideViewer) -->
+  <div id="fullscreenViewerModal" class="fullscreen-viewer-modal hidden">
+    <!-- 顶部独立控制栏 (固定 48px，不遮挡任何画面) -->
+    <div class="fs-top-bar">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button type="button" class="fs-close-btn" onclick="exitFullscreenDoc()" title="退出全屏">✕</button>
+        <span class="fs-title" id="fsDocTitle">EVOBIKE 培训课件</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="fs-page-badge" id="fsPageBadge">
+          <span id="fsCurrentPage">1</span> / <span id="fsTotalPages">...</span>
+        </span>
+        <span class="timer-badge" id="fsTimerBadge">⏱ 3s</span>
+      </div>
+    </div>
+
+    <!-- 中间最大可视舞台 (支持手势横向轻扫) -->
+    <div class="fs-stage" id="fsStage">
+      <canvas id="fsPdfCanvas"></canvas>
+    </div>
+
+    <!-- 底部独立操作栏 (固定 56px) -->
+    <div class="fs-bottom-bar">
+      <button type="button" class="slide-btn" id="fsBtnPrev" onclick="fsPrevPage()">
+        <span>←</span>
+        <span id="txtFsPrev">上一页</span>
+      </button>
+      <div class="fs-progress-text" id="fsProgressText">已合格 0/14 页</div>
+      <button type="button" class="slide-btn" id="fsBtnNext" onclick="fsNextPage()" disabled>
+        <span id="txtFsNext">研读中 (3s)</span>
+        <span>→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 微信专属右上角分享指引浮层 -->
+  <div id="wechatShareOverlay" class="wechat-share-overlay hidden" onclick="hideWechatShareGuide()">
+    <div class="wechat-share-arrow">↗</div>
+    <div class="wechat-share-card">
+      <div style="font-weight: 700; font-size: 1.05rem; margin-bottom: 6px;" id="txtWechatGuideTitle">点击右上角「···」分享</div>
+      <div style="font-size: 0.8125rem; color: #d4d4d8; line-height: 1.5;" id="txtWechatGuideDesc">
+        选择「发送给朋友」直接发至工作群！<br>
+        也可在下方凭证长按直接发送
+      </div>
+      <button type="button" class="btn-primary" style="margin-top: 14px; padding: 6px 14px; font-size: 0.8125rem; background: #fafafa; color: #09090b; width: auto; display: inline-block;">我知道了</button>
+    </div>
   </div>
 
   <!-- Toast 浮动提示容器 -->
@@ -747,7 +1010,19 @@
         step3_title: "⚡ EVOBIKE 电子签署凭证",
         step3_subtitle: "凭证已由本地内核合成 1200px 工业级超清长图",
         wechat_tip: "长按下方凭证图片，可直接「发送给朋友」或「保存到手机相册」发至工作群",
-        btn_download: "下载高清凭证至本地",
+        btn_share_wechat: "一键分享高清长图至微信群",
+        btn_enter_fs: "⛶ 进入全屏研读 (每页满3秒) ➔",
+        btn_revisit_fs: "✓ 课件研读已合格 (点击可重新全屏回顾)",
+        btn_finish_study_exit: "✓ 完成研读并退出",
+        exam_header: "⚡ EVOBIKE 培训课件强制研读考核",
+        exam_rules_title: "【研读考核规则说明】",
+        exam_rule_1: "• 点击下方按钮将自动进入【横向全屏】沉浸模式，确保宽屏幻灯片最佳阅读体验。",
+        exam_rule_2: "• 每一页幻灯片必须停留研读满 3 秒，未达标前禁止翻页。",
+        exam_rule_3: "• 翻阅至末页并读满后，系统将自动记录研读合格并解锁下一步电子签署。",
+        btn_save_gallery: "保存凭证至本地相册",
+        wechat_guide_title: "点击右上角「···」分享",
+        wechat_guide_desc: "选择「发送给朋友」直接发至工作群！<br>也可在下方凭证长按直接发送",
+        btn_download: "保存凭证至本地相册",
         btn_resign: "返回修改签名与信息",
         sum_store: "签署门店",
         sum_name: "签署人",
@@ -805,7 +1080,19 @@
         step3_title: "⚡ Comprobante de Firma EVOBIKE",
         step3_subtitle: "Comprobante generado localmente en ultra alta definición 1200px",
         wechat_tip: "Mantenga presionada la imagen para guardarla o enviarla a su grupo de trabajo",
-        btn_download: "Descargar comprobante en HD",
+        btn_share_wechat: "Compartir Comprobante a WeChat / Redes",
+        btn_enter_fs: "⛶ Entrar a Pantalla Completa (3s por lámina) ➔",
+        btn_revisit_fs: "✓ Capacitación Aprobada (Toque para revisar)",
+        btn_finish_study_exit: "✓ Finalizar Estudio y Salir",
+        exam_header: "⚡ Capacitación Obligatoria EVOBIKE",
+        exam_rules_title: "【Reglamento de Estudio Obligatorio】",
+        exam_rule_1: "• Toque el botón inferior para entrar a【Pantalla Completa】y ver las láminas en alta definición.",
+        exam_rule_2: "• Debe permanecer al menos 3 segundos en cada lámina antes de poder avanzar.",
+        exam_rule_3: "• Al completar la última lámina, el sistema registrará la aprobación y desbloqueará la firma.",
+        btn_save_gallery: "Guardar en Galería del Teléfono",
+        wechat_guide_title: "Toque「···」arriba para compartir",
+        wechat_guide_desc: "Seleccione enviar a amigos o guarde la imagen para compartir.",
+        btn_download: "Guardar en Galería del Teléfono",
         btn_resign: "Volver a Modificar",
         sum_store: "Sucursal",
         sum_name: "Firmante",
@@ -865,6 +1152,26 @@
       document.getElementById('txtStep3Subtitle').innerText = t('step3_subtitle');
       document.getElementById('txtWechatTip').innerText = t('wechat_tip');
       document.getElementById('txtBtnDownload').innerText = t('btn_download');
+      const btnShare = document.getElementById('txtBtnShareWechat');
+      if (btnShare) btnShare.innerText = t('btn_share_wechat');
+      const txtBtnEnterFs = document.getElementById('txtBtnEnterFs');
+      if (txtBtnEnterFs) txtBtnEnterFs.innerText = isDocReadingCompleted ? t('btn_revisit_fs') : t('btn_enter_fs');
+      const txtExamH = document.getElementById('txtExamHeader');
+      if (txtExamH) txtExamH.innerText = t('exam_header');
+      const txtExamR = document.getElementById('txtExamRulesTitle');
+      if (txtExamR) txtExamR.innerText = t('exam_rules_title');
+      const txtR1 = document.getElementById('txtExamRule1');
+      if (txtR1) txtR1.innerText = t('exam_rule_1');
+      const txtR2 = document.getElementById('txtExamRule2');
+      if (txtR2) txtR2.innerText = t('exam_rule_2');
+      const txtR3 = document.getElementById('txtExamRule3');
+      if (txtR3) txtR3.innerText = t('exam_rule_3');
+      const txtFsPrev = document.getElementById('txtFsPrev');
+      if (txtFsPrev) txtFsPrev.innerText = t('prev_page');
+      const txtWgt = document.getElementById('txtWechatGuideTitle');
+      if (txtWgt) txtWgt.innerText = t('wechat_guide_title');
+      const txtWgd = document.getElementById('txtWechatGuideDesc');
+      if (txtWgd) txtWgd.innerHTML = t('wechat_guide_desc');
       document.getElementById('btnReSign').innerText = t('btn_resign');
       document.getElementById('lblSumStore').innerText = t('sum_store');
       document.getElementById('lblSumName').innerText = t('sum_name');
@@ -1117,6 +1424,208 @@
     }
 
     /* ============================================================
+       3.5 全屏幻灯片沉浸式考核组件 (1:1 还原 App FullscreenSlideViewer)
+       ============================================================ */
+    let isFullscreenDoc = false;
+    let fsCurrentSlide = 1;
+    let fsTimerInterval = null;
+    let fsSecondsLeft = 3;
+
+    function enterFullscreenDoc() {
+      if (!pdfDoc) {
+        showToast("正在加载课件，请稍候...");
+        return;
+      }
+      isFullscreenDoc = true;
+      fsCurrentSlide = currentSlide;
+      const modal = document.getElementById('fullscreenViewerModal');
+      modal.classList.remove('hidden');
+
+      // 尝试请求浏览器原生全屏
+      try {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen();
+        }
+      } catch (_) {}
+
+      // 尝试在支持设备上旋转到横屏
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+      } catch (_) {}
+
+      setTimeout(() => {
+        renderFullscreenSlide();
+      }, 60);
+    }
+
+    function exitFullscreenDoc() {
+      isFullscreenDoc = false;
+      clearInterval(fsTimerInterval);
+      const modal = document.getElementById('fullscreenViewerModal');
+      modal.classList.add('hidden');
+
+      // 退出全屏
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitFullscreenElement && document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+      } catch (_) {}
+
+      currentSlide = fsCurrentSlide;
+      renderCurrentSlide();
+      updateReadingBadgesUI();
+      updateStep1NextButton();
+    }
+
+    async function renderFullscreenSlide() {
+      if (!pdfDoc || !isFullscreenDoc) return;
+      try {
+        const page = await pdfDoc.getPage(fsCurrentSlide);
+        document.getElementById('fsCurrentPage').innerText = fsCurrentSlide;
+        document.getElementById('fsTotalPages').innerText = totalSlides;
+        document.getElementById('fsDocTitle').innerText = agreementData ? (agreementData.doc_title || "EVOBIKE标准化管理方案") : "培训课件";
+
+        const canvas = document.getElementById('fsPdfCanvas');
+        const ctx = canvas.getContext('2d');
+        const stage = document.getElementById('fsStage');
+
+        const dpr = Math.max(window.devicePixelRatio || 1, 2);
+        const availWidth = Math.max(stage.clientWidth - 20, 300);
+        const availHeight = Math.max(stage.clientHeight - 20, 200);
+
+        const unscaledViewport = page.getViewport({ scale: 1 });
+        const scaleX = availWidth / unscaledViewport.width;
+        const scaleY = availHeight / unscaledViewport.height;
+        const scale = Math.min(scaleX, scaleY);
+
+        const viewport = page.getViewport({ scale: scale * dpr });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.style.width = (viewport.width / dpr) + "px";
+        canvas.style.height = (viewport.height / dpr) + "px";
+
+        await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+        startFullscreenTimer();
+      } catch (err) {
+        console.error("渲染全屏幻灯片失败:", err);
+      }
+    }
+
+    function startFullscreenTimer() {
+      clearInterval(fsTimerInterval);
+      const badge = document.getElementById('fsTimerBadge');
+      const btnPrev = document.getElementById('fsBtnPrev');
+      const btnNext = document.getElementById('fsBtnNext');
+      const progressText = document.getElementById('fsProgressText');
+
+      btnPrev.disabled = (fsCurrentSlide <= 1);
+      progressText.innerText = (currentLang === 'zh' ? `已合格 ${approvedSlidePages.size}/${totalSlides} 页` : `${approvedSlidePages.size}/${totalSlides} aprobadas`);
+
+      // 若当前页已达标
+      if (approvedSlidePages.has(fsCurrentSlide)) {
+        badge.innerText = "✓ 达标";
+        badge.className = "timer-badge done";
+        if (fsCurrentSlide >= totalSlides && approvedSlidePages.size >= totalSlides) {
+          btnNext.disabled = false;
+          btnNext.innerText = t('btn_finish_study_exit');
+          btnNext.className = "slide-btn btn-finish-study";
+        } else {
+          btnNext.disabled = false;
+          btnNext.innerText = t('next_page') + " →";
+          btnNext.className = "slide-btn";
+        }
+        return;
+      }
+
+      // 未达标，启动 3 秒物理锁
+      fsSecondsLeft = 3;
+      btnNext.disabled = true;
+      badge.innerText = "⏱ " + fsSecondsLeft + "s";
+      badge.className = "timer-badge";
+      btnNext.innerText = t('studying_countdown').replace('%d', fsSecondsLeft);
+      btnNext.className = "slide-btn";
+
+      fsTimerInterval = setInterval(() => {
+        fsSecondsLeft--;
+        if (fsSecondsLeft > 0) {
+          badge.innerText = "⏱ " + fsSecondsLeft + "s";
+          btnNext.innerText = t('studying_countdown').replace('%d', fsSecondsLeft);
+        } else {
+          clearInterval(fsTimerInterval);
+          approvedSlidePages.add(fsCurrentSlide);
+          badge.innerText = "✓ 达标";
+          badge.className = "timer-badge done";
+          btnNext.disabled = false;
+          progressText.innerText = (currentLang === 'zh' ? `已合格 ${approvedSlidePages.size}/${totalSlides} 页` : `${approvedSlidePages.size}/${totalSlides} aprobadas`);
+
+          if (fsCurrentSlide >= totalSlides && approvedSlidePages.size >= totalSlides) {
+            btnNext.innerText = t('btn_finish_study_exit');
+            btnNext.className = "slide-btn btn-finish-study";
+            isDocReadingCompleted = true;
+          } else {
+            btnNext.innerText = t('next_page') + " →";
+            btnNext.className = "slide-btn";
+          }
+        }
+      }, 1000);
+    }
+
+    function fsPrevPage() {
+      if (fsCurrentSlide > 1) {
+        fsCurrentSlide--;
+        renderFullscreenSlide();
+      }
+    }
+
+    function fsNextPage() {
+      if (fsCurrentSlide < totalSlides) {
+        fsCurrentSlide++;
+        renderFullscreenSlide();
+      } else {
+        if (approvedSlidePages.size >= totalSlides) {
+          isDocReadingCompleted = true;
+          exitFullscreenDoc();
+          showToast("✓ 课件全部研读合格！已解锁签署");
+        }
+      }
+    }
+
+    // 全屏手势横向轻扫支持
+    let fsTouchStartX = 0;
+    let fsTouchEndX = 0;
+    window.addEventListener('DOMContentLoaded', () => {
+      const stage = document.getElementById('fsStage');
+      if (stage) {
+        stage.addEventListener('touchstart', e => {
+          if (e.changedTouches && e.changedTouches[0]) {
+            fsTouchStartX = e.changedTouches[0].screenX;
+          }
+        }, { passive: true });
+        stage.addEventListener('touchend', e => {
+          if (e.changedTouches && e.changedTouches[0]) {
+            fsTouchEndX = e.changedTouches[0].screenX;
+            const diff = fsTouchEndX - fsTouchStartX;
+            if (Math.abs(diff) > 45) {
+              if (diff < 0) {
+                const btnNext = document.getElementById('fsBtnNext');
+                if (btnNext && !btnNext.disabled) fsNextPage();
+              } else {
+                fsPrevPage();
+              }
+            }
+          }
+        }, { passive: true });
+      }
+    });
+
+    /* ============================================================
        4. 触屏自适应平滑签名板 (二次贝塞尔平滑插值 + 旋转记忆重绘)
        ============================================================ */
     const sigCanvas = document.getElementById('sigCanvas');
@@ -1349,6 +1858,13 @@
           document.getElementById('btnDownloadCert').href = certDataUrl;
           document.getElementById('btnDownloadCert').download = `EVOBIKE_协议签署_${name}_${Date.now()}.png`;
 
+          // 保存 Blob 与签署人姓名以供一键分享唤起系统面板
+          currentSignerName = name;
+          try {
+            const respBlob = await fetch(certDataUrl);
+            currentCertBlob = await respBlob.blob();
+          } catch (_) {}
+
           document.getElementById('sumStore').innerText = store;
           document.getElementById('sumName').innerText = name;
           document.getElementById('sumPhone').innerText = phone;
@@ -1363,6 +1879,55 @@
           btnGen.innerText = t('btn_generate');
         }
       }, 50);
+    }
+
+    /* ============================================================
+       7. 一键分享至微信群 / 唤起系统原生分享面板 (Web Share API)
+       ============================================================ */
+    async function handleOneClickShare() {
+      const isWeChat = /MicroMessenger/i.test(navigator.userAgent);
+
+      // 1. 微信内置浏览器环境：弹出高亮分享引导遮罩
+      if (isWeChat) {
+        showWechatShareGuide();
+        return;
+      }
+
+      // 2. 现代手机浏览器环境 (iOS Safari, Android Chrome, 夸克等)：
+      // 唤起系统原生分享面板 (支持直接分享至微信、企业微信、保存图片等)
+      if (navigator.share && currentCertBlob) {
+        try {
+          const fileName = `EVOBIKE_协议签署_${currentSignerName || '凭证'}.png`;
+          const file = new File([currentCertBlob], fileName, { type: 'image/png' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: t('app_title'),
+              text: currentLang === 'zh' ? 'EVOBIKE 已完成协议签署，请查阅附件高清凭证。' : 'Comprobante de firma EVOBIKE completado.'
+            });
+            showToast(currentLang === 'zh' ? '✓ 分享已唤起' : '✓ Compartido');
+            return;
+          }
+        } catch (err) {
+          if (err.name === 'AbortError') return; // 用户主动取消系统分享
+          console.warn("navigator.share 失败:", err);
+        }
+      }
+
+      // 3. 若浏览器不支持文件直接分享或在PC端，触发保存并提示
+      const dlBtn = document.getElementById('btnDownloadCert');
+      if (dlBtn) dlBtn.click();
+      showToast(currentLang === 'zh' ? '凭证已自动保存！可在微信内长按图片直接发送' : 'Descargando comprobante...');
+    }
+
+    function showWechatShareGuide() {
+      const overlay = document.getElementById('wechatShareOverlay');
+      if (overlay) overlay.classList.remove('hidden');
+    }
+
+    function hideWechatShareGuide() {
+      const overlay = document.getElementById('wechatShareOverlay');
+      if (overlay) overlay.classList.add('hidden');
     }
 
     async function synthesize1200pxCertificate(store, name, phone) {
